@@ -12,6 +12,7 @@ Automate agentic peer review of a draft plan. This skill sends the plan to Codex
 ## Preconditions
 
 - Locate the current plan in conversation context. If in plan mode, read the plan file.
+- **If multiple plans exist in the conversation** (e.g., the user ran plan mode more than once in this session), use **only the most recent** one. Earlier plans are superseded and must not bleed into the current review.
 - If no plan exists, tell the user to draft one first, then invoke `/co-plan` again. Stop here.
 
 ## Review Loop
