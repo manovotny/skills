@@ -35,31 +35,40 @@ When committing local changes (uncommitted work, or fixes during the loop), foll
 
 ## Review-and-Fix Loop
 
+**Critical: Use a single stateful Codex session across all rounds.** Round 1 uses `codex exec` (fresh session). Rounds 2+ use `codex exec resume <session_id>` to continue the **same** session. This keeps the full context — review prompt, previous findings, Claude's dismissals — naturally in Codex's memory without re-sending it as text every round.
+
 **Step 1 — Pre-commit local changes.** If the worktree is dirty, run the shared pre-commit flow before starting the review.
 
 **Step 2 — Announce.**
 
 > Starting agentic peer review of PR #{number}. Round 1 of 4.
 
-**Step 3 — Send to Codex.** Read the review prompt from `../co-review/review-prompt.md` and fill in `{PR_NUMBER}`. **On rounds 2+, append the previous findings and Dismissed list** so Codex doesn't resurface rejected nits:
+**Step 3 — Send to Codex (round 1).** Fresh session. Read the review prompt from `../co-review/review-prompt.md` and fill in `{PR_NUMBER}`:
 
 ```bash
 cat <<'CO_FIX_EOF' | codex exec --dangerously-bypass-approvals-and-sandbox -
 [FILLED REVIEW PROMPT]
-
----
-
-Previous review findings (from earlier round):
-[PREVIOUS ISSUE LIST]
-
-Previously dismissed items (do not resurface):
-[DISMISSED LIST]
 CO_FIX_EOF
 ```
+
+**Capture the session ID.** Codex prints `session id: <uuid>` near the top of its output. Extract and remember it for subsequent rounds.
 
 - **Timeout:** `600000` ms
 - **Working directory:** Current directory
 - **Synchronous:** No background execution. Claude waits.
+
+**Step 3b — Send to Codex (rounds 2+).** Use `codex exec resume <session_id>` to continue the same session. The previous findings and dismissals are already in Codex's context — just tell it to re-review the updated code:
+
+```bash
+cat <<'CO_FIX_EOF' | codex exec resume <session_id> --dangerously-bypass-approvals-and-sandbox -
+I've addressed the accepted findings from the previous round. Please re-review PR #{PR_NUMBER} against the updated diff.
+
+Dismissed items from my previous filtering (do not resurface these):
+[DISMISSED LIST]
+CO_FIX_EOF
+```
+
+The Dismissed list is still worth appending explicitly — it signals intent clearly ("I've decided these are out of scope") even though Codex could infer it from session history.
 
 **Step 4 — Handle Codex errors.** If `codex exec` fails (non-zero exit, empty response, timeout, not installed), stop the loop and tell the user. There is no fallback reviewer here — Codex is the only reviewer.
 

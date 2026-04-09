@@ -38,6 +38,8 @@ cat <<'CO_REVIEW_EOF' | codex exec --dangerously-bypass-approvals-and-sandbox -
 CO_REVIEW_EOF
 ```
 
+**Capture the session ID** from Codex's output (`session id: <uuid>`) — needed if the user runs a re-review later.
+
 While Codex runs, Claude reviews the diff simultaneously using the same prompt and `gh pr diff {number}`. True parallel — do not wait for Codex before starting Claude's review.
 
 If Codex fails (non-zero exit, empty response, timeout), continue with Claude's review alone and tell the user Codex errored. Codex is additive — Claude's review stands on its own.
@@ -120,13 +122,24 @@ Triggered by natural language: "re-review", "review again", "author made changes
 
 **Step 1 — Pull latest.** Pull down the author's changes so the local worktree matches the current PR state.
 
-**Step 2 — Parallel re-review.** Same parallel pattern — Codex in background, Claude simultaneously. Both check:
+**Step 2 — Parallel re-review.** Same parallel pattern — Codex in background, Claude simultaneously. **Codex uses `codex exec resume <session_id>` with the session ID captured from the initial review**, so it already has the previous findings and Dismissed list in context:
+
+```bash
+cat <<'CO_REVIEW_EOF' | codex exec resume <session_id> --dangerously-bypass-approvals-and-sandbox -
+Re-review PR #{number}. The author has pushed changes. Check which previously flagged issues were addressed, which remain unresolved, and whether any new concerns were introduced.
+
+Previously dismissed items (do not resurface):
+[DISMISSED LIST]
+CO_REVIEW_EOF
+```
+
+If the session ID from the initial review isn't available (e.g., the user is starting fresh from a different session), fall back to a new `codex exec` call and append the previous findings and Dismissed list as text — but prefer resume when possible.
+
+Both check:
 
 - Which previously flagged issues were addressed
 - Which remain unresolved
 - Any new concerns introduced by the changes
-
-Include the previous issue list and **Dismissed** section in the Codex prompt so it doesn't resurface rejected nits.
 
 **Step 3 — Synthesize.** Produce a categorized breakdown:
 
