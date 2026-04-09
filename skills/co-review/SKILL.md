@@ -135,6 +135,8 @@ Include the previous issue list and **Dismissed** section in the Codex prompt so
 - **New** — new concerns found
 - **Dismissed** — carried forward, updated only if needed
 
+**Proactively flag confidence** on each unresolved and new issue, same as initial review — `[Direct fix ready]` or `[Needs author input]`.
+
 **Step 4 — Present and prompt.**
 
 ```
@@ -142,14 +144,31 @@ Re-review complete. Issues X, Y addressed. Issue Z unresolved. New issue N found
 
 1. Post new comments + resolve addressed threads
 2. Post new comments only (I'll resolve threads manually)
-3. Let me adjust (tell me what to change)
+3. Make direct fixes (optionally mixed with comments)
+4. Let me adjust (tell me what to change)
 ```
 
-**Step 5 — Post and resolve.** Based on the user's choice:
+**Step 5 — Act on the choice.**
+
+### Option 1 — Post new comments + resolve addressed threads
 
 - Post new/unresolved comments via `gh api`
 - To resolve addressed threads: fetch existing review comments (`gh api repos/{owner}/{repo}/pulls/{pr}/comments`), map issues to GitHub thread IDs, then resolve via GraphQL `resolveReviewThread` mutation
 - If thread mapping is ambiguous, ask the user before resolving
+
+### Option 2 — Post new comments only
+
+Same as Option 1 but skip thread resolution. User will resolve threads manually on GitHub.
+
+### Option 3 — Direct Fix Flow
+
+Same flow as initial review (see "Direct Fix Flow" under Initial Review Flow). Fix locally → show summary → wait for approval → commit/push/announce. The announce comment uses the same template and varied closings.
+
+If the user wants a mixed approach (some direct fixes, some comments on remaining issues), post the remaining issues as new inline comments in the same pass. Thread resolution for addressed issues follows the same rules as Option 1.
+
+### Option 4 — Let me adjust
+
+Free-form. The user tells Claude what to change.
 
 This loop repeats until the PR is clean or the user approves it.
 
