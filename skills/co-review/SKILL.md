@@ -63,7 +63,7 @@ Do not post anything until the user chooses.
 
 **Step 5 — Post comments.** Based on the user's choice:
 
-- Option 1: create pending review comments via `gh api`
+- Option 1: create pending review comments via `gh api`. To keep the review pending, omit the `event` field entirely — do NOT set it to `"PENDING"`. Valid event values are only `APPROVE`, `REQUEST_CHANGES`, and `COMMENT`.
 - Option 2: create comments and submit the review with event type `COMMENT`
 - Build comment anchors from the current diff and head SHA (`gh pr view --json headRefOid`)
 - If GitHub rejects an anchor (e.g., line not in diff hunk), adapt with judgment — re-target the comment or inform the user. Do not fail the whole review.
