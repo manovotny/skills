@@ -35,24 +35,24 @@ Each skill stands on its own. Use them in any order or combination that fits the
 - [Codex CLI](https://github.com/openai/codex), authenticated, with model and reasoning configured in `~/.codex/config.toml`
 - [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, and `co-fix`
 
+Use the [`skills` CLI](https://skills.sh) to install. The skills target Claude Code specifically (`--agent claude-code`).
+
 ### Install all skills
 
-Clone the repo and symlink each skill into `~/.claude/skills/`:
-
 ```bash
-git clone https://github.com/manovotny/ai.git ~/Developer/ai
-cd ~/Developer/ai
-
-for skill in skills/*/; do
-  name=$(basename "$skill")
-  ln -sf "$(pwd)/$skill" "$HOME/.claude/skills/$name"
-done
+npx skills add manovotny/ai -g --agent claude-code -y
 ```
 
 ### Install a single skill
 
 ```bash
-ln -sf /path/to/ai/skills/<skill-name> ~/.claude/skills/<skill-name>
+npx skills add manovotny/ai -g --agent claude-code --skill co-plan -y
+```
+
+### Install a subset
+
+```bash
+npx skills add manovotny/ai -g --agent claude-code --skill co-plan co-review -y
 ```
 
 The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`).
