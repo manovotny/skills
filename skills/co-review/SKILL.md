@@ -48,6 +48,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 - Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
+- **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]` vs `[Needs author input]`). The user shouldn't have to ask.
 
 **Step 4 — Present and prompt.**
 
@@ -56,17 +57,62 @@ Review complete. N issues found.
 
 1. Post all as pending review comments
 2. Post all and submit the review
-3. Let me adjust (tell me what to change)
+3. Make direct fixes (optionally mixed with comments)
+4. Let me adjust (tell me what to change)
 ```
 
-Do not post anything until the user chooses.
+Do not post anything or make any changes until the user chooses.
 
-**Step 5 — Post comments.** Based on the user's choice:
+**Step 5 — Act on the choice.**
 
-- Option 1: create pending review comments via `gh api`. To keep the review pending, omit the `event` field entirely — do NOT set it to `"PENDING"`. Valid event values are only `APPROVE`, `REQUEST_CHANGES`, and `COMMENT`.
-- Option 2: create comments and submit the review with event type `COMMENT`
-- Build comment anchors from the current diff and head SHA (`gh pr view --json headRefOid`)
-- If GitHub rejects an anchor (e.g., line not in diff hunk), adapt with judgment — re-target the comment or inform the user. Do not fail the whole review.
+### Option 1 — Post all as pending review comments
+
+Create pending review comments via `gh api`. To keep the review pending, omit the `event` field entirely — do NOT set it to `"PENDING"`. Valid event values are only `APPROVE`, `REQUEST_CHANGES`, and `COMMENT`.
+
+Build comment anchors from the current diff and head SHA (`gh pr view --json headRefOid`). If GitHub rejects an anchor (e.g., line not in diff hunk), adapt with judgment — re-target the comment or inform the user. Do not fail the whole review.
+
+### Option 2 — Post all and submit the review
+
+Create comments and submit the review with event type `COMMENT`. Same anchor/adapt rules as Option 1.
+
+### Option 3 — Direct Fix Flow
+
+Handles both "fix everything directly" and mixed "some fixes, some comments" cases.
+
+1. **Ask which issues to fix directly.** Example: "Which issues should I fix directly? You can also pull items from the Dismissed list if you want them included."
+2. **Make the fixes locally.** Do NOT commit or push yet. Let the user review the changes first.
+3. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
+4. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
+5. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct Fix Announce Comment" below).
+6. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct Fix Announce Comment is separate from these inline comments.
+
+### Option 4 — Let me adjust
+
+Free-form. The user tells Claude what to change about the review.
+
+## Direct Fix Announce Comment
+
+When changes are pushed directly as part of Option 3, post a top-level PR comment (not a review comment) that announces the fixes to the author. Use `gh pr comment {number} --body-file -` with a heredoc.
+
+**Structure:**
+
+1. **Opening line** — announces direct push with the short commit SHA (`git rev-parse --short HEAD`). Example: "Pushed some changes directly in `abc1234`."
+2. **Bulleted summary** — concise but comprehensive. One bullet per fix. Match the tone of the summary Claude showed the user for approval.
+3. **Closing line** — varied, not robotic. Rotate through alternatives so consecutive PRs don't all end the same way.
+
+**Closing line alternatives** (rotate — never pick the same one twice in a row):
+
+- "Let me know if anything didn't land right — happy to iterate or revert."
+- "Let me know what you think. Happy to tweak or roll back if needed."
+- "Ping me if any of these missed the mark — easy to adjust or revert."
+- "Let me know if these aren't quite right. Happy to keep iterating."
+- "Give them a look and let me know — happy to revise or revert if they're off."
+
+**Tone rules** (same as review comments):
+
+- First person, as if the user is speaking — not Claude.
+- Straightforward but not cold.
+- Don't be overly apologetic.
 
 ## Re-review Flow
 
