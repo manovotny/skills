@@ -2,9 +2,8 @@
 
 1. Read the PR title and description for context using `gh pr view {PR_NUMBER}`.
 2. If the PR description contains links to other PRs and repos as reference, read those too for more context.
-3. Find and read any CLAUDE.md or AGENTS.md files to gain project-specific context.
-4. Find and read any CONTRIBUTING* or STYLEGUIDE* files (e.g., CONTRIBUTING.md, CONTRIBUTING-COMPONENTS-HOOKS.md, STYLEGUIDE.md, SSO.STYLEGUIDE.md) to ensure the PR follows project rules and best practices.
-5. Check for symlinked repositories in the workspace. Use them to verify code examples, API references, and technical details when available.
+3. Find and read any project context files using glob patterns `**/CLAUDE.md`, `**/AGENTS.md`, `**/CONTRIBUTING*`, and `**/STYLEGUIDE*` (case-insensitive, recursive). These contain project-specific context, rules, and best practices the PR should follow. Examples: `CONTRIBUTING.md`, `CONTRIBUTING-COMPONENTS-HOOKS.md`, `STYLEGUIDE.md`, `SSO.STYLEGUIDE.md`.
+4. Check for symlinked repositories in the workspace. Use them to verify code examples, API references, and technical details when available.
 
 ## Review
 
