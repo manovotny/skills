@@ -11,8 +11,9 @@ Automate agentic peer review of a pull request. Claude and Codex review the PR d
 
 ## Preconditions
 
-- If the user provided a PR number (e.g., `/co-review 2369`), use it.
+- If the user provided a PR number or URL (e.g., `/co-review 2369`), use it.
 - Otherwise run `gh pr view --json number` to infer from the current branch.
+- If `gh pr view` fails (common for fork PRs), get the current branch name and try `gh pr list --head "owner:branch" --json number` — replace the **first** `/` in the branch name with `:` to form the fork-qualified head ref (e.g., branch `michaelsthr/fix/outdated-expo-package` → `--head "michaelsthr:fix/outdated-expo-package"`).
 - If no PR can be determined, ask the user for the number and stop.
 
 ## Review Prompt
