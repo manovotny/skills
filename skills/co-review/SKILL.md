@@ -72,11 +72,20 @@ Do not post anything or make any changes until the user chooses.
 
 Create pending review comments via `gh api`. To keep the review pending, omit the `event` field entirely — do NOT set it to `"PENDING"`. Valid event values are only `APPROVE`, `REQUEST_CHANGES`, and `COMMENT`.
 
+**Always write the full JSON payload to a temp file and use `--input`, not `--field`, for review submissions.** The `--field` flag treats nested arrays/objects (like `comments`) as strings, causing 422 errors. Example:
+
+```bash
+cat <<'REVIEW_JSON' > /tmp/review-payload.json
+{ "commit_id": "<sha>", "comments": [{ "path": "...", "line": 1, "side": "RIGHT", "body": "..." }] }
+REVIEW_JSON
+gh api repos/{owner}/{repo}/pulls/{pr}/reviews --input /tmp/review-payload.json
+```
+
 Build comment anchors from the current diff and head SHA (`gh pr view --json headRefOid`). If GitHub rejects an anchor (e.g., line not in diff hunk), adapt with judgment — re-target the comment or inform the user. Do not fail the whole review.
 
 ### Option 2 — Post all and submit the review
 
-Create comments and submit the review with event type `COMMENT`. Same anchor/adapt rules as Option 1.
+Create comments and submit the review with event type `COMMENT`. Same `--input` file approach and anchor/adapt rules as Option 1.
 
 ### Option 3 — Direct Fix Flow
 
@@ -166,7 +175,7 @@ Re-review complete. Issues X, Y addressed. Issue Z unresolved. New issue N found
 
 ### Option 1 — Post new comments + resolve addressed threads
 
-- Post new/unresolved comments via `gh api`
+- Post new/unresolved comments via `gh api` (same `--input` file approach as initial review)
 - To resolve addressed threads: fetch existing review comments (`gh api repos/{owner}/{repo}/pulls/{pr}/comments`), map issues to GitHub thread IDs, then resolve via GraphQL `resolveReviewThread` mutation
 - If thread mapping is ambiguous, ask the user before resolving
 
@@ -186,6 +195,23 @@ Free-form. The user tells Claude what to change.
 
 This loop repeats until the PR is clean or the user approves it.
 
+## GitHub Suggested Changes
+
+When a comment is marked `[Direct fix ready]` and the fix is a small, self-contained code change, use GitHub's suggestion syntax so the author can apply it with one click. Wrap the replacement code in a suggestion block inside the comment body:
+
+````
+```suggestion
+<replacement lines>
+```
+````
+
+**Rules:**
+
+- The suggestion replaces the exact lines covered by the comment's line range. If the comment targets a single line, the suggestion replaces that one line. If it targets a multi-line range (`start_line` to `line`), the suggestion replaces that entire range.
+- Preserve the original indentation exactly.
+- Only use suggestions for concrete, unambiguous fixes — not for design questions or alternatives that need discussion.
+- If the fix spans lines outside the comment's anchor range, don't force a suggestion — use a regular code snippet instead and explain what to change.
+
 ## GitHub Comment Tone
 
 When posting comments, write them as if the user is speaking — first person, not Claude:
@@ -193,5 +219,5 @@ When posting comments, write them as if the user is speaking — first person, n
 - Straightforward but not cold. Concise but comprehensive.
 - Inquisitive, humble, and unassuming. Pose a question first — seeking clarity, not making demands.
 - Don't be overly apologetic. Assume the reviewer doesn't have the same context as the author.
-- When a fix is straightforward, include a concrete suggestion or code snippet.
+- When a fix is straightforward, use a GitHub suggestion block (see above) so the author can apply it directly.
 - When it's a design question, just raise the concern.
