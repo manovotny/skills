@@ -123,7 +123,15 @@ Merge summary:
 
 If the user wants to abort at this point, they can run `git merge --abort` before Claude commits.
 
-**Step 7 — Commit the merge.**
+**Step 7 — Run lint and format.**
+
+Before committing, run lint/format to catch issues the merge may have introduced (e.g., conflicting imports that both survived, formatting drift between branches). Same detection rules as `/co-pr` — read `package.json` scripts and dependencies, never hardcode tool names.
+
+- Run available lint and format commands with autofix
+- Re-stage any files modified by autofixes: `git add {files}`
+- If lint errors remain that Claude can't auto-fix, stop and tell the user
+
+**Step 8 — Commit the merge.**
 
 ```bash
 git commit --no-edit
@@ -131,7 +139,7 @@ git commit --no-edit
 
 Use git's default merge commit message. No co-author trailer on merge commits.
 
-**Step 8 — Push.**
+**Step 9 — Push.**
 
 Detect upstream, fall back to `origin`:
 
