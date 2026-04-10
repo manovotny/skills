@@ -42,7 +42,7 @@ Used by both create and update modes when there are uncommitted changes.
 
 ## Create Mode (`/co-pr` and `/co-pr draft`)
 
-**Step 1 — Precondition.** Run `gh pr view --json number,state` on the current branch.
+**Step 1 — Precondition.** Run `gh pr view --json number,state` on the current branch. **Run this alone — do not parallelize with other commands**, because `gh` exits non-zero when no PR exists (the expected happy path), and parallel tool calls cancel siblings on non-zero exit.
 - PR exists → error: "A PR already exists for this branch. Use `/co-pr update` to update it."
 - `gh` fails (auth/remote/network) → surface the actual error, don't assume "no PR."
 - No PR → continue.

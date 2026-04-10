@@ -1,4 +1,4 @@
-# ai
+# skills
 
 Personal collection of [Claude Code](https://claude.com/claude-code) skills built around collaborative workflows with [Codex CLI](https://github.com/openai/codex).
 
@@ -42,19 +42,19 @@ Use the [`skills` CLI](https://skills.sh) to install. The skills target Claude C
 ### Install all skills
 
 ```bash
-npx skills add manovotny/ai -g --agent claude-code -y
+npx skills add manovotny/skills -g --agent claude-code -y
 ```
 
 ### Install a single skill
 
 ```bash
-npx skills add manovotny/ai -g --agent claude-code --skill co-plan -y
+npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 ```
 
 ### Install a subset
 
 ```bash
-npx skills add manovotny/ai -g --agent claude-code --skill co-plan co-review -y
+npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
 The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`).
