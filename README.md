@@ -59,6 +59,18 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review
 
 The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`).
 
+## Development
+
+If you clone the repo to iterate on skills locally, run the setup script to symlink them into Claude Code:
+
+```bash
+git clone https://github.com/manovotny/skills.git
+cd skills
+./setup.sh
+```
+
+Re-run `./setup.sh` any time you add or remove a skill. It's idempotent — safe to run repeatedly. It only manages symlinks for skills in this repo and won't touch other skills you have installed.
+
 ## Skill design principles
 
 - **Claude is the author and decision-maker.** Codex provides feedback, Claude filters it. Overkill, premature abstraction, and pedantry get rejected into a Dismissed list.
