@@ -108,7 +108,7 @@ When changes are pushed directly as part of Option 3, post a top-level PR commen
 
 **Structure:**
 
-1. **Opening line** — announces direct push with the short commit SHA (`git rev-parse --short HEAD`). Example: "Pushed some changes directly in `abc1234`."
+1. **Opening line** — announces direct push with the short commit SHA (`git rev-parse --short HEAD`). Use plain text for the hash — not code backticks — so GitHub renders it as a clickable link to the commit. Example: "Pushed some changes directly in abc1234."
 2. **Bulleted summary** — concise but comprehensive. One bullet per fix. Match the tone of the summary Claude showed the user for approval.
 3. **Closing line** — varied, not robotic. Rotate through alternatives so consecutive PRs don't all end the same way.
 
