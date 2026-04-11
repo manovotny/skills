@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+FORCE=false
+if [[ "${1:-}" == "--force" ]]; then
+  FORCE=true
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_SKILLS_DIR="$SCRIPT_DIR/skills"
 TARGET_DIR="$HOME/.claude/skills"
@@ -24,7 +29,7 @@ for skill_dir in "$REPO_SKILLS_DIR"/*/; do
   skill_name="$(basename "$skill_dir")"
   link_path="$TARGET_DIR/$skill_name"
 
-  if [ -L "$link_path" ] && [ "$(readlink "$link_path")" = "$skill_dir" ]; then
+  if [ "$FORCE" = false ] && [ -L "$link_path" ] && [ "$(readlink "$link_path")" = "$skill_dir" ]; then
     echo "  skip  $skill_name (already linked)"
     skipped=$((skipped + 1))
   else
