@@ -12,13 +12,13 @@ Create or update a GitHub pull request from the current branch. Handles staging,
 - `/co-pr draft` — create a draft PR
 - `/co-pr update` — refresh title/body of an existing open PR
 
-**Scope:** JS/TS repos only for now (detected via `package.json`). Symlinks are never staged or committed — they're for cross-repo verification only.
+**Scope:** JS/TS repos only for now (detected via `package.json`). Symlinks are never staged or committed — they're for cross-repo verification only. `docs/superpowers/` files (specs, plans, designs) are never staged or committed — they're working artifacts for the current session only.
 
 ## Shared Pre-Commit Flow
 
 Used by both create and update modes when there are uncommitted changes.
 
-1. **Stage** — `git add` everything except symlinks. Symlinks are a hard exclusion.
+1. **Stage** — `git add` everything except symlinks and `docs/superpowers/`. Both are hard exclusions.
 2. **Lint and format** — Read `package.json` scripts and dependencies. Run repo-defined commands with autofix (e.g., `pnpm lint --fix`, `pnpm format`). Never hardcode tool names.
 3. **Re-stage** — Formatters modify files on disk. Re-run `git add` on affected files so autofixes are included in the commit.
 4. **Tests/typechecks (judgment-based)** — Skip for small tweaks (CSS, docs, config). Run for meaningful changes (logic, refactors, new code). Use `pnpm test`, `pnpm typecheck`, `pnpm check`, etc.
