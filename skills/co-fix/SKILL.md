@@ -86,7 +86,7 @@ Treat CI failures as first-class findings alongside Codex's code review — a br
 - Reject overkill, premature abstraction, pedantry, and out-of-scope work.
 - Track rejected items in a **Dismissed** list (for round 2+ context and possible PR body update).
 
-**Step 7 — Fix the code.** Make the accepted changes. Commit granularity is judgment-based:
+**Step 7 — Fix the code.** Make the smallest change that fully addresses each accepted finding. If the clean fix is broader than the feature deserves, surface that instead of smuggling in a refactor. Commit granularity is judgment-based:
 - Multiple related fixes (e.g., type safety) → 1 commit
 - Unrelated concerns (bug + test + refactor) → separate commits
 - Logical grouping over mechanical one-commit-per-issue
