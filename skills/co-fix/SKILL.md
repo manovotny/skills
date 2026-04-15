@@ -70,22 +70,30 @@ CO_FIX_EOF
 
 The Dismissed list is still worth appending explicitly — it signals intent clearly ("I've decided these are out of scope") even though Codex could infer it from session history.
 
-**Step 4 — Handle Codex errors.** If `codex exec` fails (non-zero exit, empty response, timeout, not installed), stop the loop and tell the user. There is no fallback reviewer here — Codex is the only reviewer.
+**Step 4 — Check CI status.** After receiving Codex's review, also check PR checks:
 
-**Step 5 — Apply judgment.** Process Codex's findings:
+```bash
+gh pr checks --json name,state,bucket,link,description
+```
+
+Treat CI failures as first-class findings alongside Codex's code review — a broken build matters as much as a code comment. Investigate failures with `gh run view <run-id> --log-failed` and fix them in the same pass as code review findings.
+
+**Step 5 — Handle Codex errors.** If `codex exec` fails (non-zero exit, empty response, timeout, not installed), stop the loop and tell the user. There is no fallback reviewer here — Codex is the only reviewer.
+
+**Step 6 — Apply judgment.** Process Codex's findings and CI failures together:
 - Do not blindly accept feedback.
 - Keep findings that improve correctness, maintainability, performance, or test coverage.
 - Reject overkill, premature abstraction, pedantry, and out-of-scope work.
 - Track rejected items in a **Dismissed** list (for round 2+ context and possible PR body update).
 
-**Step 6 — Fix the code.** Make the accepted changes. Commit granularity is judgment-based:
+**Step 7 — Fix the code.** Make the smallest change that fully addresses each accepted finding. If the clean fix is broader than the feature deserves, surface that instead of smuggling in a refactor. Commit granularity is judgment-based:
 - Multiple related fixes (e.g., type safety) → 1 commit
 - Unrelated concerns (bug + test + refactor) → separate commits
 - Logical grouping over mechanical one-commit-per-issue
 
-**Step 7 — Pre-commit checks and push.** Run the shared pre-commit flow on the fixes (lint/format always, tests/typechecks when meaningful). Commit and push. **No amending.**
+**Step 8 — Pre-commit and push.** Run the shared pre-commit flow on the fixes (lint/format always, tests/typechecks when meaningful). Commit and push. **No amending.**
 
-**Step 8 — Check termination.** Look for satisfaction signals in Codex's response:
+**Step 9 — Check termination.** Look for satisfaction signals in Codex's response:
 - "this is ready"
 - "this is solid"
 - "no remaining gaps"
@@ -93,13 +101,13 @@ The Dismissed list is still worth appending explicitly — it signals intent cle
 - "no remaining findings"
 - "don't see any substantive gaps"
 
-If satisfied (even with trailing nits), exit the loop. Trailing nits fold into Step 9.
+If satisfied (even with trailing nits), exit the loop. Trailing nits fold into Step 10 below.
 
 **Hard cap: 4 rounds.** If round 4 has no satisfaction signal, stop and ask the user for guidance.
 
 If not satisfied and under cap, announce the next round and return to Step 3 with the carried Dismissed list.
 
-## Step 9 — PR Description Update (Conditional)
+## Step 10 — PR Description Update (Conditional)
 
 After the loop exits, decide whether to update the PR description:
 
