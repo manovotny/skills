@@ -120,11 +120,9 @@ Write it fresh each time. Vary length, shape, and register based on what fits. S
 
 For reference only — these show the range of acceptable register. Do **not** pick from this list, and do **not** reuse verbatim:
 
-- "Yell if I got any of these wrong."
-- "You know this code better than I do — overrule me where it matters."
-- "Jumping into your PR here, so push back if I overstepped."
-- "Revert anything that feels off."
-- "These felt safe from the outside, but trust your gut over mine."
+- "Let me know if I got any of these wrong."
+- "You're the expert here, but these caught my eye. Feel free to undo or adjust."
+- "Change anything that feels off."
 
 **Avoid:**
 
