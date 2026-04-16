@@ -107,7 +107,18 @@ Free-form. The user tells Claude what to change about the review.
 
 ## Direct Fix Announce Comment
 
-When changes are pushed directly as part of Option 3, post a top-level PR comment (not a review comment) that announces the fixes to the author. Use `gh pr comment {number} --body-file -` with a heredoc.
+When changes are pushed directly as part of Option 3, post a top-level PR comment (not a review comment) that announces the fixes to the author. Use `gh pr comment {number} --body-file -` with a heredoc:
+
+```bash
+gh pr comment {number} --body-file - <<'ANNOUNCE_EOF'
+Pushed some changes directly in abc1234.
+
+- Tightened the foo handling in bar.ts
+- Dropped the unused baz import
+ANNOUNCE_EOF
+```
+
+**The body is raw markdown, rendered as-is — do NOT pipe JSON into `--body-file -`.** The JSON-to-file `--input` pattern shown in Option 1 is specific to `gh api` review-submission calls, which expect a JSON payload. `gh pr comment` takes the raw body; piping JSON will post the literal JSON text as the comment.
 
 **Structure:**
 
