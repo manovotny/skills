@@ -49,6 +49,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 
 - Deduplicate overlapping findings
 - Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry
+- **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
 - **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]` vs `[Needs author input]`). The user shouldn't have to ask.
@@ -90,6 +91,8 @@ Create comments and submit the review with event type `COMMENT`. Same `--input` 
 ### Option 3 — Direct Fix Flow
 
 Handles both "fix everything directly" and mixed "some fixes, some comments" cases.
+
+**Don't dismiss diagnostics as "pre-existing."** If diagnostics, LSP output, or linter warnings surface in changed files or their direct ripple — unused code, type errors, deprecated APIs, etc. — treat them as actionable alongside the accepted findings. Either fix them in the same pass or surface them for the user's call. Pre-existence alone is not grounds for dismissal.
 
 1. **Ask which issues to fix directly.** Example: "Which issues should I fix directly? You can also pull items from the Dismissed list if you want them included."
 2. **Make the fixes locally.** Do NOT commit or push yet. Let the user review the changes first.

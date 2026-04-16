@@ -83,6 +83,7 @@ Treat CI failures as first-class findings alongside Codex's code review — a br
 **Step 6 — Apply judgment.** Process Codex's findings and CI failures together:
 - Do not blindly accept feedback.
 - Keep findings that improve correctness, maintainability, performance, or test coverage.
+- **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
 - Reject overkill, premature abstraction, pedantry, and out-of-scope work.
 - Track rejected items in a **Dismissed** list (for round 2+ context and possible PR body update).
 
@@ -90,6 +91,8 @@ Treat CI failures as first-class findings alongside Codex's code review — a br
 - Multiple related fixes (e.g., type safety) → 1 commit
 - Unrelated concerns (bug + test + refactor) → separate commits
 - Logical grouping over mechanical one-commit-per-issue
+
+**Don't dismiss diagnostics as "pre-existing."** If diagnostics, LSP output, or linter warnings surface in changed files or their direct ripple — unused code, type errors, deprecated APIs, etc. — treat them as actionable alongside the accepted findings. Either fix them in the same pass or surface them for the user's call. Pre-existence alone is not grounds for dismissal.
 
 **Step 8 — Pre-commit and push.** Run the shared pre-commit flow on the fixes (lint/format always, tests/typechecks when meaningful). Commit and push. **No amending.**
 
