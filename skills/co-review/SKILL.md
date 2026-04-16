@@ -16,11 +16,11 @@ Automate agentic peer review of a pull request. Claude and Codex review the PR d
 - If `gh pr view` fails (common for fork PRs), get the current branch name and try `gh pr list --head "owner:branch" --json number` — replace the **first** `/` in the branch name with `:` to form the fork-qualified head ref (e.g., branch `michaelsthr/fix/outdated-expo-package` → `--head "michaelsthr:fix/outdated-expo-package"`).
 - If no PR can be determined, ask the user for the number and stop.
 
-## Review Prompt
+## Review prompt
 
 Read [review-prompt.md](review-prompt.md) from this skill's directory (not repo cwd). Both Claude and Codex use this same prompt. Replace `{PR_NUMBER}` with the actual PR number before use.
 
-## Initial Review Flow
+## Initial review flow
 
 Announce: **"Starting parallel review of PR #{number}."**
 
@@ -88,7 +88,7 @@ Build comment anchors from the current diff and head SHA (`gh pr view --json hea
 
 Create comments and submit the review with event type `COMMENT`. Same `--input` file approach and anchor/adapt rules as Option 1.
 
-### Option 3 — Direct Fix Flow
+### Option 3 — Direct fix flow
 
 Handles both "fix everything directly" and mixed "some fixes, some comments" cases.
 
@@ -98,14 +98,14 @@ Handles both "fix everything directly" and mixed "some fixes, some comments" cas
 2. **Make the fixes locally.** Do NOT commit or push yet. Let the user review the changes first.
 3. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
 4. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
-5. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct Fix Announce Comment" below).
-6. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct Fix Announce Comment is separate from these inline comments.
+5. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct fix announce comment" below).
+6. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct fix announce comment is separate from these inline comments.
 
 ### Option 4 — Let me adjust
 
 Free-form. The user tells Claude what to change about the review.
 
-## Direct Fix Announce Comment
+## Direct fix announce comment
 
 When changes are pushed directly as part of Option 3, post a top-level PR comment (not a review comment) that announces the fixes to the author. Use `gh pr comment {number} --body-file -` with a heredoc:
 
@@ -150,7 +150,7 @@ For reference only — these show the range of acceptable register. Do **not** p
 - Straightforward but not cold.
 - Don't be overly apologetic.
 
-## Re-review Flow
+## Re-review flow
 
 Triggered by natural language: "re-review", "review again", "author made changes", etc. Claude recognizes a re-review because the conversation already contains the previous issue list.
 
@@ -207,9 +207,9 @@ Re-review complete. Issues X, Y addressed. Issue Z unresolved. New issue N found
 
 Same as Option 1 but skip thread resolution. User will resolve threads manually on GitHub.
 
-### Option 3 — Direct Fix Flow
+### Option 3 — Direct fix flow
 
-Same flow as initial review (see "Direct Fix Flow" under Initial Review Flow). Fix locally → show summary → wait for approval → commit/push/announce. The announce comment uses the same template and varied closings.
+Same flow as initial review (see "Direct fix flow" under Initial review flow). Fix locally → show summary → wait for approval → commit/push/announce. The announce comment uses the same template and varied closings.
 
 If the user wants a mixed approach (some direct fixes, some comments on remaining issues), post the remaining issues as new inline comments in the same pass. Thread resolution for addressed issues follows the same rules as Option 1.
 
@@ -219,7 +219,7 @@ Free-form. The user tells Claude what to change.
 
 This loop repeats until the PR is clean or the user approves it.
 
-## GitHub Suggested Changes
+## GitHub suggested changes
 
 When a comment is marked `[Direct fix ready]` and the fix is a small, self-contained code change, use GitHub's suggestion syntax so the author can apply it with one click. Wrap the replacement code in a suggestion block inside the comment body:
 
@@ -236,12 +236,29 @@ When a comment is marked `[Direct fix ready]` and the fix is a small, self-conta
 - Only use suggestions for concrete, unambiguous fixes — not for design questions or alternatives that need discussion.
 - If the fix spans lines outside the comment's anchor range, don't force a suggestion — use a regular code snippet instead and explain what to change.
 
-## GitHub Comment Tone
+## Composing comments
+
+Before building the review payload, group findings by anchor:
+
+- **One comment per code location.** If multiple findings apply to the same line or range, merge them into a single comment with a numbered or bulleted list. Do not stack multiple comments on the same anchor.
+- **One suggestion block per comment.** Combine multiple fixes into a single block that resolves everything at once.
+- **For the same issue across files, write the reasoning once and reference it in the others** — e.g., "Same `foo` thoughts as the other comment." Don't rewrite the full justification in each file.
+
+## GitHub comment tone
 
 When posting comments, write them as if the user is speaking — first person, not Claude:
 
-- Straightforward but not cold. Concise but comprehensive.
-- Inquisitive, humble, and unassuming. Pose a question first — seeking clarity, not making demands.
-- Don't be overly apologetic. Assume the reviewer doesn't have the same context as the author.
+- **Lead with the observation.** No scene-setting ("On a reference page that's literally defining `someFunction`…"), no softening openers ("Small thing —", "Nit -", "Separately —", "Let's match:"), no restating the PR's goal back to the author. If the suggestion block already shows the fix, the body is the reason + the question — nothing else.
+- **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?".
+- **Straightforward but not cold.** Don't be overly apologetic. Assume the reviewer doesn't have the same context as the author.
+- **Inquisitive, not demanding.** Raise the concern, offer the alternative, let the author decide.
 - When a fix is straightforward, use a GitHub suggestion block (see above) so the author can apply it directly.
 - When it's a design question, just raise the concern.
+
+**Before/after — verbose to tight:**
+
+> Verbose: "On a reference page that's literally defining `someFunction`, the anchor text `this function` still leans on the preceding sentence to make sense. Naming it explicitly would match the PR's goal more cleanly — wdyt?"
+>
+> Tight: "`this function` still leans on the preceding sentence to make sense. Maybe make it explicit?"
+
+The tight version drops scene-setting the author already has, drops justification the suggestion block already implies, and swaps "— wdyt?" for a grounded question. Roughly 70% shorter, same information.

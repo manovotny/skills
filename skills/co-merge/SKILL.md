@@ -167,7 +167,7 @@ N commits merged. X conflicts resolved.
 
 Run `gh pr view --json url --jq .url` to check for an associated PR. If there is one, include the URL. If not, omit that line.
 
-## Error Paths
+## Error paths
 
 - **Uncommitted changes** → "Commit or stash your changes first." Stop.
 - **`gh repo view` fails** → surface the actual error. Stop.

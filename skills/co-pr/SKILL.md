@@ -14,7 +14,7 @@ Create or update a GitHub pull request from the current branch. Handles staging,
 
 **Scope:** JS/TS repos only for now (detected via `package.json`). Symlinks are never staged or committed — they're for cross-repo verification only. `docs/superpowers/` files (specs, plans, designs) are never staged or committed — they're working artifacts for the current session only.
 
-## Shared Pre-Commit Flow
+## Shared pre-commit flow
 
 Used by both create and update modes when there are uncommitted changes.
 
@@ -40,7 +40,7 @@ Used by both create and update modes when there are uncommitted changes.
 
    If push fails, surface the actual error and stop.
 
-## Create Mode (`/co-pr` and `/co-pr draft`)
+## Create mode (`/co-pr` and `/co-pr draft`)
 
 **Step 1 — Precondition.** Run `gh pr view --json number,state` on the current branch. **Run this alone — do not parallelize with other commands**, because `gh` exits non-zero when no PR exists (the expected happy path), and parallel tool calls cancel siblings on non-zero exit.
 - PR exists → error: "A PR already exists for this branch. Use `/co-pr update` to update it."
@@ -69,7 +69,7 @@ CO_PR_BODY
 
 **Step 7 — Output.** Print the PR URL. Nothing else.
 
-## Update Mode (`/co-pr update`)
+## Update mode (`/co-pr update`)
 
 **Step 1 — Precondition.** Run `gh pr view --json number,title,body,state,url` on the current branch.
 - No PR → error: "No PR exists for this branch. Use `/co-pr` to create one."

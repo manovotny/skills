@@ -20,7 +20,7 @@ Run `gh pr view --json number,state,url` on the current branch.
 - **`CLOSED` or `MERGED`** → error: "The PR on this branch is `{state}`. `/co-fix` only operates on open PRs."
 - **`gh` fails (auth/remote/network)** → surface the actual error and stop.
 
-## Shared Pre-Commit Flow
+## Shared pre-commit flow
 
 When committing local changes (uncommitted work, or fixes during the loop), follow the same pre-commit flow as `/co-pr`:
 
@@ -33,7 +33,7 @@ When committing local changes (uncommitted work, or fixes during the loop), foll
 
 **Hard rule: never amend after push.** All post-push fixes are new commits. Amending would require force-push, which destabilizes review threads and confuses anyone who pulled the branch.
 
-## Review-and-Fix Loop
+## Review-and-fix loop
 
 **Critical: Use a single stateful Codex session across all rounds.** Round 1 uses `codex exec` (fresh session). Rounds 2+ use `codex exec resume <session_id>` to continue the **same** session. This keeps the full context — review prompt, previous findings, Claude's dismissals — naturally in Codex's memory without re-sending it as text every round.
 
@@ -110,7 +110,7 @@ If satisfied (even with trailing nits), exit the loop. Trailing nits fold into S
 
 If not satisfied and under cap, announce the next round and return to Step 3 with the carried Dismissed list.
 
-## Step 10 — PR Description Update (Conditional)
+## Step 10 — PR description update (conditional)
 
 After the loop exits, decide whether to update the PR description:
 

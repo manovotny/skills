@@ -15,7 +15,7 @@ Automate agentic peer review of a draft plan. This skill sends the plan to Codex
 - **If multiple plans exist in the conversation** (e.g., the user ran plan mode more than once in this session), use **only the most recent** one. Earlier plans are superseded and must not bleed into the current review.
 - If no plan exists, tell the user to draft one first, then invoke `/co-plan` again. Stop here.
 
-## Review Loop
+## Review loop
 
 **Critical: Use a single stateful Codex session across all rounds.** Round 1 uses `codex exec` (fresh session). Rounds 2+ use `codex exec resume <session_id>` to continue the **same** session, so the "review only, do not execute" instruction from round 1 stays in context.
 
@@ -58,7 +58,7 @@ This should rarely happen with the `resume`-based flow, but we check every round
 - Reject overkill, premature abstraction, and out-of-scope suggestions.
 - Add rejected items to a **Not Planned** section with brief rationale for each.
 
-**Step 3 — Check termination.** (See Termination Rules below.) If not done, announce the next round number and send the revised plan back using `codex exec resume` with the captured session ID:
+**Step 3 — Check termination.** (See Termination rules below.) If not done, announce the next round number and send the revised plan back using `codex exec resume` with the captured session ID:
 
 ```bash
 cat <<'CO_PLAN_EOF' | codex exec resume <session_id> --dangerously-bypass-approvals-and-sandbox -
@@ -76,7 +76,7 @@ After each resumed round, run the same `git status --porcelain` safety check. If
 
 Repeat Steps 2-3 until terminated.
 
-## Termination Rules
+## Termination rules
 
 After each Codex response, check for a **satisfaction signal** — phrases like:
 - "this is ready"
@@ -90,7 +90,7 @@ If Codex signals satisfaction — even with trailing nits — **exit the loop**.
 
 **Hard cap: 4 rounds.** If round 4 has no satisfaction signal, stop and ask the user for guidance. Do not continue indefinitely.
 
-## Final Self-Review
+## Final self-review
 
 Once the loop exits, do one cleanup pass:
 
