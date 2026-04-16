@@ -110,15 +110,25 @@ When changes are pushed directly as part of Option 3, post a top-level PR commen
 
 1. **Opening line** — announces direct push with the short commit SHA (`git rev-parse --short HEAD`). Use plain text for the hash — not code backticks — so GitHub renders it as a clickable link to the commit. Example: "Pushed some changes directly in abc1234."
 2. **Bulleted summary** — concise but comprehensive. One bullet per fix. Match the tone of the summary Claude showed the user for approval.
-3. **Closing line** — varied, not robotic. Rotate through alternatives so consecutive PRs don't all end the same way.
+3. **Closing line** — optional. Acknowledges the author has context you don't and invites pushback without apology. Often the bullets stand on their own; no closing at all is a valid, useful choice — silence can be the most effective way to keep every PR from ending the same way.
 
-**Closing line alternatives** (rotate — never pick the same one twice in a row):
+**Writing the closing line:**
 
-- "Let me know if anything didn't land right — happy to iterate or revert."
-- "Let me know what you think. Happy to tweak or roll back if needed."
-- "Ping me if any of these missed the mark — easy to adjust or revert."
-- "Let me know if these aren't quite right. Happy to keep iterating."
-- "Give them a look and let me know — happy to revise or revert if they're off."
+The sentiment to convey: you jumped in proactively to save the author a round-trip, but they own the code and the context. Nothing pushed is sacred — overrule, adjust, or revert freely.
+
+Write it fresh each time. Vary length, shape, and register based on what fits. Short imperatives, self-aware asides, and context-acknowledging sentences all work. Omitting it entirely also works.
+
+For reference only — these show the range of acceptable register. Do **not** pick from this list, and do **not** reuse verbatim:
+
+- "Let me know if I got any of these wrong."
+- "You're the expert here, but these caught my eye. Feel free to undo or adjust."
+- "Change anything that feels off."
+
+**Avoid:**
+
+- "Happy to iterate/tweak/revise/roll back" — customer-service register; centers you instead of the author.
+- Always pairing "adjust" with "revert" — becomes its own tell.
+- Ending every PR with a closing line. Silence breaks the pattern.
 
 **Tone rules** (same as review comments):
 
