@@ -16,6 +16,7 @@ The changes already exist locally. Review the diff using `gh pr diff {PR_NUMBER}
 3. **Performance** — Are there obvious performance concerns or optimizations that could be made? Fetches that could be parallelized, loops that could be optimized, etc.
 4. **Test coverage** — Does the repository have testing patterns? If so, are there adequate tests for these changes? Skip for documentation-only changes.
 5. **Content** — If there are content changes, review code in code blocks as if you're reviewing actual code. Assess content flow, content hierarchy, typos, ambiguity that needs to be clarified, and verbosity that needs to be simplified.
+6. **Diagnostics in touched code** — Treat diagnostics, LSP output, and linter warnings in changed files and their direct ripple effects as review findings — unused code, type errors, deprecation warnings, missing dependencies, a11y issues, etc. Scope is the diff and the code it touches; do not audit the whole codebase. Pre-existence is not grounds for dismissal if the finding sits in changed code or its direct ripple.
 
 ### How to review
 
