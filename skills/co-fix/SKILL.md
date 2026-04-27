@@ -117,10 +117,12 @@ After the loop exits, decide whether to update the PR description:
 - **Conditionally update the body** if the fixes meaningfully changed the PR narrative — Claude's judgment.
 - **Conditionally update the "Not Planned" section** if any dismissed items reflect a real scope or product decision worth surfacing. Trivial nits (overkill, premature abstraction, pedantry) stay internal — they don't belong in the PR body.
 
-If updating, follow the same preservation rules as `/co-pr update`:
-- Rewrite stale prose freely
-- Preserve user-added structural sections, callouts, images, external links, and code blocks
-- Use `gh pr edit --body-file -` with heredoc, never inline `--body`
+If updating:
+
+1. **Read the current body first** via `gh pr view --json title,body`. Do not rely on what the body looked like at the start of the loop — the user may have edited it (added Vercel previews, Linear/Slack links, screenshots, callouts) while Codex was running.
+2. **Identify preserved content** using the same heuristics as `/co-pr update` Step 3 (structural sections, callouts, images, external links to deployments/tickets/resources, code blocks).
+3. **Merge, don't replace.** Rewrite inline prose freely; reposition preserved elements if needed; never drop them.
+4. Use `gh pr edit --body-file -` with heredoc, never inline `--body`.
 
 ## Output
 
