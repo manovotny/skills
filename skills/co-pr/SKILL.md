@@ -79,7 +79,7 @@ CO_PR_BODY
 
 **Step 2 — Pre-commit.** If there are uncommitted changes, run the shared pre-commit flow.
 
-**Step 3 — Identify preserved content.** Read the existing title and body. Use heuristics (no markers) to identify user-added elements that must survive:
+**Step 3 — Identify preserved content.** Read the existing title and body via `gh pr view --json title,body` *now* — do not rely on prior reads from earlier in the session, since the user may have edited the body between then and now. Use heuristics (no markers) to identify user-added elements that must survive:
 - Structural sections: "Other references", "Preview(s)", "Screenshots", "Testing notes", etc.
 - Callouts at the top: `[!NOTE]`, `[!WARNING]`, `[!TIP]`, `[!IMPORTANT]`, `[!CAUTION]`
 - Images (Markdown or HTML)
