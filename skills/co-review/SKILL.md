@@ -43,6 +43,8 @@ CO_REVIEW_EOF
 
 While Codex runs, Claude reviews the diff simultaneously using the same prompt and `gh pr diff {number}`. True parallel — do not wait for Codex before starting Claude's review.
 
+**Do not poll for Codex's status with sleep/cat loops.** Background tasks notify you on completion automatically — the Bash tool will reject leading `sleep` commands (e.g., `sleep 30 && cat .../output | tail -80`). Launch Codex, do Claude's review in the meantime, and only read the background task's output once you receive the completion notification. If you genuinely need to watch a condition, use the `Monitor` tool with an `until` loop, never chained sleeps.
+
 If Codex fails (non-zero exit, empty response, timeout), continue with Claude's review alone and tell the user Codex errored. Codex is additive — Claude's review stands on its own.
 
 **Step 3 — Synthesize.** Once Codex finishes, merge both reviews:
