@@ -102,10 +102,15 @@ Handles both "fix everything directly" and mixed "some fixes, some comments" cas
 
 1. **Ask which issues to fix directly.** Example: "Which issues should I fix directly? You can also pull items from the Dismissed list if you want them included."
 2. **Make the fixes locally.** Do NOT commit or push yet. Let the user review the changes first.
-3. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
-4. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
-5. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct fix announce comment" below).
-6. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct fix announce comment is separate from these inline comments.
+3. **Verify the fixes before showing them.** These are changes you authored and will push, so confirm they hold up — don't claim merge-ready on faith. Run the repo's fast checks on the change — **formatter, linter, type check, and tests** — when they're detectable and runnable. Detect the commands; never hardcode them. Prefer what CI runs (read CI config), then `package.json` scripts, `Makefile`/`justfile`, then the ecosystem's standard (`pyproject.toml`/`tox`/`ruff`, `cargo`, `go`, etc.).
+   - **Run-when-runnable, report what you skip.** Format/lint/type check are fast and hermetic — run them whenever the toolchain is present. Tests may need infra/secrets or be slow — run them when runnable, otherwise skip. For anything you can't find or can't run, say exactly what and why; never guess a command, never silently skip.
+   - **Scope auto-format to the files you changed; never reformat the tree.** Don't run a standalone formatter if formatting is already part of lint (e.g., the linter's `--fix`).
+   - **Type check, not build.** Run the ecosystem's fast type/compile validation — `tsc --noEmit`, `cargo check`, `go build ./...`, etc. (in languages where compiling *is* the type check, that compile step is the type check; static analyzers like `go vet` are lint, not the type check). Do **not** run the project's full `build`/bundle/codegen pipeline — it's the slow, side-effecting, env-specific one, and CI covers it on push.
+   - If a check fails, fix it before continuing. In the summary (next step), name what actually ran ("format, lint, types, and tests pass locally") and what you skipped and why — don't assert a blanket "merge-ready" you didn't exercise.
+4. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
+5. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
+6. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct fix announce comment" below).
+7. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct fix announce comment is separate from these inline comments.
 
 ### Option 4 — Let me adjust
 
