@@ -30,6 +30,7 @@ Announce: **"Starting parallel review of PR #{number}."**
 - Follow linked PRs or repos explicitly referenced in the description
 - Find and read any CLAUDE.md or AGENTS.md files
 - Check for symlinked repositories — use them to verify code examples, API references, and technical details
+- Read CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context (see review-prompt.md)
 
 **Step 2 — Parallel review.** Kick off Codex in the background with `run_in_background: true` and a timeout of `600000` ms:
 
@@ -52,6 +53,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 - Deduplicate overlapping findings
 - Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry
 - **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
+- **Fold in CI failures and staleness as repo-level findings.** Treat failing/errored CI checks as findings at the severity the failure warrants (flag obvious infra/flake as such, not as a code bug). If Claude and Codex report the same CI failure, list it once. A `BEHIND`/stale base is its own finding; recommend `/co-merge`. These have no file anchor — mark them repo-level so posting routes them correctly (see Option 1). They come from reading check status, not from running builds locally.
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
 - **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]` vs `[Needs author input]`). The user shouldn't have to ask.
@@ -86,9 +88,11 @@ gh api repos/{owner}/{repo}/pulls/{pr}/reviews --input /tmp/review-payload.json
 
 Build comment anchors from the current diff and head SHA (`gh pr view --json headRefOid`). If GitHub rejects an anchor (e.g., line not in diff hunk), adapt with judgment — re-target the comment or inform the user. Do not fail the whole review.
 
+**Repo-level findings (CI failures, base staleness) have no diff anchor — never force them onto a line.** When submitting a review (Option 2), put them in the review `body`. When leaving the review pending (Option 1, no event), post them as a single top-level PR comment via `gh pr comment {number} --body-file -` so they're visible without a submitted review. Group all repo-level findings into one comment; keep inline findings inline.
+
 ### Option 2 — Post all and submit the review
 
-Create comments and submit the review with event type `COMMENT`. Same `--input` file approach and anchor/adapt rules as Option 1.
+Create comments and submit the review with event type `COMMENT`. Same `--input` file approach and anchor/adapt rules as Option 1. Repo-level findings (CI failures, base staleness) go in the review `body`, not inline comments.
 
 ### Option 3 — Direct fix flow
 
