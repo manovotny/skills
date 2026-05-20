@@ -24,12 +24,12 @@ Read [review-prompt.md](review-prompt.md) from this skill's directory (not repo 
 
 Announce: **"Starting parallel review of PR #{number}."**
 
-**Step 1 — Pre-review.** Before touching the diff, gather context:
+**Step 1 — Pre-review.** Before touching the diff, gather context. The **authoritative checklist is review-prompt.md's "Pre-review" section** (Claude and Codex share it) — follow it there rather than relying on a separate list here. In brief:
 
-- `gh pr view {number}` for title, description, and linked references
-- Follow linked PRs or repos explicitly referenced in the description
-- Find and read any CLAUDE.md or AGENTS.md files
-- Check for symlinked repositories — use them to verify code examples, API references, and technical details
+- `gh pr view {number}` for title, description, and linked references; follow linked PRs/repos
+- Project context files — CLAUDE.md, AGENTS.md, CONTRIBUTING*, STYLEGUIDE* (following one-hop `@`/pointer imports)
+- Symlinked repos — verify code examples, API references, signatures, and technical details against source
+- CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context
 
 **Step 2 — Parallel review.** Kick off Codex in the background with `run_in_background: true` and a timeout of `600000` ms:
 
@@ -52,6 +52,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 - Deduplicate overlapping findings
 - Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry
 - **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
+- **Fold in CI failures and staleness as repo-level findings.** Treat failing/errored CI checks as findings at the severity the failure warrants (flag obvious infra/flake as such, not as a code bug). If Claude and Codex report the same CI failure, list it once. A `BEHIND`/stale base is its own finding; recommend `/co-merge`. These have no file anchor — mark them repo-level so posting routes them correctly (see Option 1). They come from reading check status, not from running builds locally.
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
 - **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]` vs `[Needs author input]`). The user shouldn't have to ask.
@@ -86,9 +87,11 @@ gh api repos/{owner}/{repo}/pulls/{pr}/reviews --input /tmp/review-payload.json
 
 Build comment anchors from the current diff and head SHA (`gh pr view --json headRefOid`). If GitHub rejects an anchor (e.g., line not in diff hunk), adapt with judgment — re-target the comment or inform the user. Do not fail the whole review.
 
+**Repo-level findings (CI failures, base staleness) have no diff anchor — never force them onto a line.** When submitting a review (Option 2), put them in the review `body`. When leaving the review pending (Option 1, no event), post them as a single top-level PR comment via `gh pr comment {number} --body-file -` so they're visible without a submitted review. Group all repo-level findings into one comment; keep inline findings inline.
+
 ### Option 2 — Post all and submit the review
 
-Create comments and submit the review with event type `COMMENT`. Same `--input` file approach and anchor/adapt rules as Option 1.
+Create comments and submit the review with event type `COMMENT`. Same `--input` file approach and anchor/adapt rules as Option 1. Repo-level findings (CI failures, base staleness) go in the review `body`, not inline comments.
 
 ### Option 3 — Direct fix flow
 
@@ -98,10 +101,15 @@ Handles both "fix everything directly" and mixed "some fixes, some comments" cas
 
 1. **Ask which issues to fix directly.** Example: "Which issues should I fix directly? You can also pull items from the Dismissed list if you want them included."
 2. **Make the fixes locally.** Do NOT commit or push yet. Let the user review the changes first.
-3. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
-4. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
-5. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct fix announce comment" below).
-6. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct fix announce comment is separate from these inline comments.
+3. **Verify the fixes before showing them.** These are changes you authored and will push, so confirm they hold up — don't claim merge-ready on faith. Run the repo's fast checks on the change — **formatter, linter, type check, and tests** — when they're detectable and runnable. Detect the commands; never hardcode them. Prefer what CI runs (read CI config), then `package.json` scripts, `Makefile`/`justfile`, then the ecosystem's standard (`pyproject.toml`/`tox`/`ruff`, `cargo`, `go`, etc.).
+   - **Run-when-runnable, report what you skip.** Format/lint/type check are fast and hermetic — run them whenever the toolchain is present. Tests may need infra/secrets or be slow — run them when runnable, otherwise skip. For anything you can't find or can't run, say exactly what and why; never guess a command, never silently skip.
+   - **Scope auto-format to the files you changed; never reformat the tree.** Don't run a standalone formatter if formatting is already part of lint (e.g., the linter's `--fix`).
+   - **Type check, not build.** Run the ecosystem's fast type/compile validation — `tsc --noEmit`, `cargo check`, `go build ./...`, etc. (in languages where compiling *is* the type check, that compile step is the type check; static analyzers like `go vet` are lint, not the type check). Do **not** run the project's full `build`/bundle/codegen pipeline — it's the slow, side-effecting, env-specific one, and CI covers it on push.
+   - If a check fails, fix it before continuing. In the summary (next step), name what actually ran ("format, lint, types, and tests pass locally") and what you skipped and why — don't assert a blanket "merge-ready" you didn't exercise.
+4. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
+5. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
+6. **On approval, commit, push, and announce.** Use a commit message matching the repo's style from `git log --oneline -20`. After pushing, post an announce comment on the PR (see "Direct fix announce comment" below).
+7. **Any remaining issues stay as comments.** If the user wanted a mixed approach — some issues fixed directly, some left as comments — post the remaining issues as pending review comments in the same pass (Option 1 behavior). The Direct fix announce comment is separate from these inline comments.
 
 ### Option 4 — Let me adjust
 
@@ -156,7 +164,7 @@ For reference only — these show the range of acceptable register. Do **not** p
 
 Triggered by natural language: "re-review", "review again", "author made changes", etc. Claude recognizes a re-review because the conversation already contains the previous issue list.
 
-**Step 1 — Pull latest.** Pull down the author's changes so the local worktree matches the current PR state.
+**Step 1 — Pull latest and re-validate.** Pull down the author's changes so the local worktree matches the current PR state. Then re-read CI status (`gh pr checks`) and re-check staleness (`gh pr view --json mergeStateStatus`) against the base — the author may have fixed checks, broken others, or the base may have moved again. If you make direct fixes during this re-review, verify them with the same checks as Option 3 ("Verify the fixes before showing them") before committing.
 
 **Step 2 — Parallel re-review.** Same parallel pattern — Codex in background, Claude simultaneously. **Codex uses `codex exec resume <session_id>` with the session ID captured from the initial review**, so it already has the previous findings and Dismissed list in context:
 
@@ -198,6 +206,8 @@ Re-review complete. Issues X, Y addressed. Issue Z unresolved. New issue N found
 ```
 
 **Step 5 — Act on the choice.**
+
+**Repo-level findings (a newly failing check or a `BEHIND` base) have no diff anchor.** Post them as a single top-level PR comment via `gh pr comment {number} --body-file -` — never anchor them to a line. This applies whichever option the user picks.
 
 ### Option 1 — Post new comments + resolve addressed threads
 
