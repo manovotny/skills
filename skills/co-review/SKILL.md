@@ -165,7 +165,7 @@ For reference only — these show the range of acceptable register. Do **not** p
 
 Triggered by natural language: "re-review", "review again", "author made changes", etc. Claude recognizes a re-review because the conversation already contains the previous issue list.
 
-**Step 1 — Pull latest.** Pull down the author's changes so the local worktree matches the current PR state.
+**Step 1 — Pull latest and re-validate.** Pull down the author's changes so the local worktree matches the current PR state. Then re-read CI status (`gh pr checks`) and re-check staleness (`gh pr view --json mergeStateStatus`) against the base — the author may have fixed checks, broken others, or the base may have moved again. If you make direct fixes during this re-review, verify them with the same checks as Option 3 ("Verify the fixes before showing them") before committing.
 
 **Step 2 — Parallel re-review.** Same parallel pattern — Codex in background, Claude simultaneously. **Codex uses `codex exec resume <session_id>` with the session ID captured from the initial review**, so it already has the previous findings and Dismissed list in context:
 
@@ -207,6 +207,8 @@ Re-review complete. Issues X, Y addressed. Issue Z unresolved. New issue N found
 ```
 
 **Step 5 — Act on the choice.**
+
+**Repo-level findings (a newly failing check or a `BEHIND` base) have no diff anchor.** Post them as a single top-level PR comment via `gh pr comment {number} --body-file -` — never anchor them to a line. This applies whichever option the user picks.
 
 ### Option 1 — Post new comments + resolve addressed threads
 
