@@ -24,13 +24,12 @@ Read [review-prompt.md](review-prompt.md) from this skill's directory (not repo 
 
 Announce: **"Starting parallel review of PR #{number}."**
 
-**Step 1 — Pre-review.** Before touching the diff, gather context:
+**Step 1 — Pre-review.** Before touching the diff, gather context. The **authoritative checklist is review-prompt.md's "Pre-review" section** (Claude and Codex share it) — follow it there rather than relying on a separate list here. In brief:
 
-- `gh pr view {number}` for title, description, and linked references
-- Follow linked PRs or repos explicitly referenced in the description
-- Find and read any CLAUDE.md or AGENTS.md files
-- Check for symlinked repositories — use them to verify code examples, API references, and technical details
-- Read CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context (see review-prompt.md)
+- `gh pr view {number}` for title, description, and linked references; follow linked PRs/repos
+- Project context files — CLAUDE.md, AGENTS.md, CONTRIBUTING*, STYLEGUIDE* (following one-hop `@`/pointer imports)
+- Symlinked repos — verify code examples, API references, signatures, and technical details against source
+- CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context
 
 **Step 2 — Parallel review.** Kick off Codex in the background with `run_in_background: true` and a timeout of `600000` ms:
 
