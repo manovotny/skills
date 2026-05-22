@@ -28,7 +28,7 @@ Announce: **"Starting parallel review of PR #{number}."**
 
 - `gh pr view {number}` for title, description, and linked references; follow linked PRs/repos
 - Project context files — CLAUDE.md, AGENTS.md, CONTRIBUTING*, STYLEGUIDE* (following one-hop `@`/pointer imports)
-- Symlinked repos — verify code examples, API references, signatures, and technical details against source
+- Authoritative sources — enumerate what this PR's claims depend on (upstream/sibling repos, dependency package sources, vendored code, API/spec definitions, generated artifacts; reachable via symlink, local clone, or installed package), note which are reachable versus missing, and ask the user for missing ones that block real verification
 - CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context
 
 **Step 2 — Parallel review.** Kick off Codex in the background with `run_in_background: true` and a timeout of `600000` ms:
@@ -55,7 +55,8 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 - **Fold in CI failures and staleness as repo-level findings.** Treat failing/errored CI checks as findings at the severity the failure warrants (flag obvious infra/flake as such, not as a code bug). If Claude and Codex report the same CI failure, list it once. A `BEHIND`/stale base is its own finding; recommend `/co-merge`. These have no file anchor — mark them repo-level so posting routes them correctly (see Option 1). They come from reading check status, not from running builds locally.
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
-- **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]` vs `[Needs author input]`). The user shouldn't have to ask.
+- **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]` for an objective claim blocked on a missing authoritative source). The user shouldn't have to ask.
+- **Synthesis gate — verify or request, don't punt.** No finding may be marked `[Needs author input]` or left as flagged uncertainty on an objectively-checkable fact when an authoritative source is reachable or could be requested. If the source is reachable, verify against it. If it's missing, request it and mark the item `[Unverifiable — needs access to <source>]` so it stays visible instead of silently becoming an author question. Only genuinely intent- or scope-dependent items belong in `[Needs author input]`.
 
 **Step 4 — Present and prompt.**
 
@@ -104,7 +105,7 @@ Handles both "fix everything directly" and mixed "some fixes, some comments" cas
 3. **Verify the fixes before showing them.** These are changes you authored and will push, so confirm they hold up — don't claim merge-ready on faith. Run the repo's fast checks on the change — **formatter, linter, type check, and tests** — when they're detectable and runnable. Detect the commands; never hardcode them. Prefer what CI runs (read CI config), then `package.json` scripts, `Makefile`/`justfile`, then the ecosystem's standard (`pyproject.toml`/`tox`/`ruff`, `cargo`, `go`, etc.).
    - **Run-when-runnable, report what you skip.** Format/lint/type check are fast and hermetic — run them whenever the toolchain is present. Tests may need infra/secrets or be slow — run them when runnable, otherwise skip. For anything you can't find or can't run, say exactly what and why; never guess a command, never silently skip.
    - **Scope auto-format to the files you changed; never reformat the tree.** Don't run a standalone formatter if formatting is already part of lint (e.g., the linter's `--fix`).
-   - **Type check, not build.** Run the ecosystem's fast type/compile validation — `tsc --noEmit`, `cargo check`, `go build ./...`, etc. (in languages where compiling *is* the type check, that compile step is the type check; static analyzers like `go vet` are lint, not the type check). Do **not** run the project's full `build`/bundle/codegen pipeline — it's the slow, side-effecting, env-specific one, and CI covers it on push.
+   - **Type check, not build.** Run the ecosystem's fast type/compile validation — `tsc --noEmit`, `cargo check`, `go build ./...`, etc. (in languages where compiling _is_ the type check, that compile step is the type check; static analyzers like `go vet` are lint, not the type check). Do **not** run the project's full `build`/bundle/codegen pipeline — it's the slow, side-effecting, env-specific one, and CI covers it on push.
    - If a check fails, fix it before continuing. In the summary (next step), name what actually ran ("format, lint, types, and tests pass locally") and what you skipped and why — don't assert a blanket "merge-ready" you didn't exercise.
 4. **Summarize what changed.** Present a concise bulleted summary per issue so the user can review before committing.
 5. **Wait for approval.** The user reviews and either approves, asks for adjustments, or iterates.
@@ -192,7 +193,7 @@ Both check:
 - **New** — new concerns found
 - **Dismissed** — carried forward, updated only if needed
 
-**Proactively flag confidence** on each unresolved and new issue, same as initial review — `[Direct fix ready]` or `[Needs author input]`.
+**Proactively flag confidence** on each unresolved and new issue, same as initial review — `[Direct fix ready]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]`. The synthesis gate still applies: verify objective claims against a reachable source, or request a missing one — don't punt them to the author.
 
 **Step 4 — Present and prompt.**
 
