@@ -8,13 +8,13 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 
 | Skill | Purpose |
 | --- | --- |
-| [`/co-plan`](skills/co-plan/SKILL.md) | Iterative peer review of an implementation plan. Claude drafts, Codex reviews, Claude revises, repeat until Codex is satisfied — then a final pass strips overengineered bloat. |
-| [`/co-review`](skills/co-review/SKILL.md) | Parallel PR review by Claude and Codex. Both review the diff simultaneously, Claude synthesizes findings into one issue list, then posts pending GitHub comments or makes direct fixes. Handles re-reviews when the author pushes changes. |
-| [`/co-pr`](skills/co-pr/SKILL.md) | Create or update a GitHub pull request. Three modes: `/co-pr` (ready), `/co-pr draft`, `/co-pr update`. Handles staging, lint/format, commit, push, and PR description generation with content preservation. |
+| [`/co-audit`](skills/co-audit/SKILL.md) | Whole-project improvement audit. Claude and Codex audit the project (or a path) in parallel across performance, caching, simplicity, consistency, security, and more; Claude synthesizes one prioritized findings list, then fixes selected items or writes a report. No PR comments or GitHub posting; fixes stay local unless you explicitly ask to commit/push. |
 | [`/co-fix`](skills/co-fix/SKILL.md) | Agentic peer review-and-fix loop on a PR Claude authored. Codex reviews, Claude filters feedback (rejecting overkill), fixes the code, commits, iterates until Codex is satisfied. |
 | [`/co-merge`](skills/co-merge/SKILL.md) | Merge the default branch into the current branch and resolve conflicts. Accepts the default branch's lock file and reinstalls dependency changes when needed. Code conflicts are resolved with judgment. |
+| [`/co-plan`](skills/co-plan/SKILL.md) | Iterative peer review of an implementation plan. Claude drafts, Codex reviews, Claude revises, repeat until Codex is satisfied — then a final pass strips overengineered bloat. |
+| [`/co-pr`](skills/co-pr/SKILL.md) | Create or update a GitHub pull request. Three modes: `/co-pr` (ready), `/co-pr draft`, `/co-pr update`. Handles staging, lint/format, commit, push, and PR description generation with content preservation. |
+| [`/co-review`](skills/co-review/SKILL.md) | Parallel PR review by Claude and Codex. Both review the diff simultaneously, Claude synthesizes findings into one issue list, then posts pending GitHub comments or makes direct fixes. Handles re-reviews when the author pushes changes. |
 | [`/co-watch`](skills/co-watch/SKILL.md) | Watch a PR after review. A local self-rescheduling loop that notifies on new comments, re-runs `/co-review` when the author pushes commits, and cleans up the worktree when the PR merges or closes. Default 20m interval, overridable (`/co-watch 30m`). |
-| [`/co-audit`](skills/co-audit/SKILL.md) | Whole-project improvement audit. Claude and Codex audit the project (or a path) in parallel across performance, caching, simplicity, consistency, security, and more; Claude synthesizes one prioritized findings list, then fixes selected items or writes a report. No PR comments or GitHub posting; fixes stay local unless you explicitly ask to commit/push. |
 
 ## Typical workflow
 
@@ -62,7 +62,7 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
-The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`, `/co-watch`, `/co-audit`).
+The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`, `/co-watch`).
 
 ## Development
 
