@@ -15,18 +15,22 @@ The changes already exist locally. Review the diff using `gh pr diff {PR_NUMBER}
 
 1. **Logic and correctness** — Check for bugs, edge cases, technical accuracy, inaccurate comments, syntax errors, and potential issues. Is this the best possible, most long term maintainable way to solve this problem, or are there alternative or simpler solutions that we should consider?
 2. **Security** — Flag obvious vulnerabilities in changed code: injection (SQL, command, template), XSS, authz/authn gaps, exposed secrets, unsafe input handling, and unsafe deserialization. Not a full audit — point users at `/security-review` for deeper passes.
-3. **Readability** — Is the code clear and maintainable? Does it follow best practices in this repository?
-4. **Performance** — Are there obvious performance concerns or optimizations that could be made? Fetches that could be parallelized, loops that could be optimized, etc.
+3. **Readability & reuse** — Is the code clear and maintainable? Does it follow best practices in this repository? Does new code duplicate an obvious or readily discoverable existing utility, component, or helper instead of reusing it? Stay within the diff and its immediate neighborhood — no whole-codebase archaeology.
+4. **Performance & efficiency** — Obvious performance concerns or optimizations in changed code: fetches that could be parallelized, loops that could be optimized, redundant or repeated work that could be hoisted or batched. Includes **query efficiency** (N+1, over-fetching, missing bulk operations in changed data access) and **caching opportunities** (new code that should use an existing cache or memoize an expensive computation).
 5. **Test coverage** — Does the repository have testing patterns? If so, are there adequate tests for these changes? Skip for documentation-only changes.
 6. **Content** — If there are content changes, review code in code blocks as if you're reviewing actual code. Assess content flow, content hierarchy, typos, ambiguity that needs to be clarified, and verbosity that needs to be simplified.
 7. **Diagnostics in touched code** — Treat diagnostics, LSP output, and linter warnings in changed files and their direct ripple effects as review findings — unused code, type errors, deprecation warnings, missing dependencies, a11y issues, etc. Scope is the diff and the code it touches; do not audit the whole codebase. Pre-existence is not grounds for dismissal if the finding sits in changed code or its direct ripple.
 8. **CI status and staleness** — Treat failing or errored CI checks (from Pre-review) as findings at the severity the failure warrants — a broken build or failing test is a bug, not a nit — unless the failure is clearly infrastructure/flaky, in which case say so rather than asserting a code bug. Surface a `BEHIND`/stale base as its own finding. These are **repo-level findings** with no file/line anchor — report them in the repo-level format (see Output). They are signals you read, not commands you run locally.
+9. **Error handling & resilience** — In changed code, flag unhandled failure paths, missing timeouts/retries on network or IO calls, swallowed errors, and missing graceful degradation. Suggestion-level unless an unhandled path is an outright bug.
+10. **Framework features** — Does the changed code re-implement a verified framework or platform feature (data fetching, routing, caching, validation, etc.)? Point at the built-in — confirm it exists rather than assuming. Suggestion-level, scoped to the diff.
+11. **Accessibility** — For UI changes, a quick UI-specific pass for a11y gaps not already surfaced by diagnostics (item 7): missing labels/alt text, non-semantic interactive elements, keyboard traps, insufficient contrast. Web/UI only; skip for non-UI diffs. Complements item 7 rather than creating a second home for the same finding.
 
 ### How to review
 
 - Flag uncertainty about **intent or scope** explicitly rather than asking the author to explain it.
 - Uncertainty about an **objective fact** (type name, signature, endpoint, parameter, return value, behavior) is not a finding yet — resolve it against an authoritative source first. If the source that would settle it isn't reachable in the workspace, ask the user to make it available before downgrading the item to "needs author input."
 - Don't be overly pedantic. Nitpicks are fine, but only if they are relevant issues within reason.
+- Improvement-oriented findings (caching, query efficiency, error handling, framework features, duplication, accessibility) are usually `suggestion` or `nit`, not `bug` — raise them when they're clearly worth the change and let the author decide. Apply the same overkill filter: skip churn that isn't worth it.
 
 ## Output
 
