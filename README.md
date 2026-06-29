@@ -13,6 +13,7 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 | [`/co-pr`](skills/co-pr/SKILL.md) | Create or update a GitHub pull request. Three modes: `/co-pr` (ready), `/co-pr draft`, `/co-pr update`. Handles staging, lint/format, commit, push, and PR description generation with content preservation. |
 | [`/co-fix`](skills/co-fix/SKILL.md) | Agentic peer review-and-fix loop on a PR Claude authored. Codex reviews, Claude filters feedback (rejecting overkill), fixes the code, commits, iterates until Codex is satisfied. |
 | [`/co-merge`](skills/co-merge/SKILL.md) | Merge the default branch into the current branch and resolve conflicts. Accepts the default branch's lock file and reinstalls dependency changes when needed. Code conflicts are resolved with judgment. |
+| [`/co-watch`](skills/co-watch/SKILL.md) | Watch a PR after review. A local self-rescheduling loop that notifies on new comments, re-runs `/co-review` when the author pushes commits, and cleans up the worktree when the PR merges or closes. Default 20m interval, overridable (`/co-watch 30m`). |
 
 ## Typical workflow
 
@@ -25,6 +26,7 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 6. /co-merge        → if the branch fell behind, merge the default branch in
 7. (mark ready)     → PR ready for coworker review
 8. /co-review       → use this to review someone else's PR
+9. /co-watch        → after a review, keep watching for comments, commits, and merge
 ```
 
 Each skill stands on its own. Use them in any order or combination that fits the task.
@@ -35,7 +37,7 @@ Each skill stands on its own. Use them in any order or combination that fits the
 
 - [Claude Code](https://claude.com/claude-code)
 - [Codex CLI](https://github.com/openai/codex), authenticated, with model and reasoning configured in `~/.codex/config.toml`
-- [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, `co-fix`, and `co-merge`
+- [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, `co-fix`, `co-merge`, and `co-watch`
 
 Use the [`skills` CLI](https://skills.sh) to install. The skills target Claude Code specifically (`--agent claude-code`).
 
@@ -57,7 +59,7 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
-The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`).
+The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`, `/co-watch`).
 
 ## Development
 
