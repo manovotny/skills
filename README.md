@@ -14,6 +14,7 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 | [`/co-fix`](skills/co-fix/SKILL.md) | Agentic peer review-and-fix loop on a PR Claude authored. Codex reviews, Claude filters feedback (rejecting overkill), fixes the code, commits, iterates until Codex is satisfied. |
 | [`/co-merge`](skills/co-merge/SKILL.md) | Merge the default branch into the current branch and resolve conflicts. Accepts the default branch's lock file and reinstalls dependency changes when needed. Code conflicts are resolved with judgment. |
 | [`/co-watch`](skills/co-watch/SKILL.md) | Watch a PR after review. A local self-rescheduling loop that notifies on new comments, re-runs `/co-review` when the author pushes commits, and cleans up the worktree when the PR merges or closes. Default 20m interval, overridable (`/co-watch 30m`). |
+| [`/co-audit`](skills/co-audit/SKILL.md) | Whole-project improvement audit. Claude and Codex audit the project (or a path) in parallel across performance, caching, simplicity, consistency, security, and more; Claude synthesizes one prioritized findings list, then fixes selected items or writes a report. No PR comments or GitHub posting; fixes stay local unless you explicitly ask to commit/push. |
 
 ## Typical workflow
 
@@ -30,6 +31,8 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 ```
 
 Each skill stands on its own. Use them in any order or combination that fits the task.
+
+`/co-audit` sits outside this PR-centric flow — run it any time to audit the whole project (or a path) for improvements: `/co-audit`, `/co-audit performance`, or `/co-audit src/api`.
 
 ## Installation
 
@@ -59,7 +62,7 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
-The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`, `/co-watch`).
+The skills become available in your next Claude Code session as slash commands (`/co-plan`, `/co-review`, `/co-pr`, `/co-fix`, `/co-merge`, `/co-watch`, `/co-audit`).
 
 ## Development
 
