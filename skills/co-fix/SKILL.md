@@ -20,6 +20,8 @@ Run `gh pr view --json number,state,url` on the current branch.
 - **`CLOSED` or `MERGED`** → error: "The PR on this branch is `{state}`. `/co-fix` only operates on open PRs."
 - **`gh` fails (auth/remote/network)** → surface the actual error and stop.
 
+**Run `git commit` and `git push` from the session's current directory.** `/co-fix` derives the PR from the current branch, so this directory is on the PR branch — keep commits and pushes anchored here so the work stays visible in the app and pushes from where the user can watch. Don't move your working position to a *different checkout of the repo* to land fixes. Editing files that live elsewhere (symlinked in, or sibling packages) is fine — that's file location, not your working position.
+
 ## Shared pre-commit flow
 
 When committing local changes (uncommitted work, or fixes during the loop), follow the same pre-commit flow as `/co-pr`:
