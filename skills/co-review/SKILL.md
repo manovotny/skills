@@ -16,6 +16,18 @@ Automate agentic peer review of a pull request. Claude and Codex review the PR d
 - If `gh pr view` fails (common for fork PRs), get the current branch name and try `gh pr list --head "owner:branch" --json number` — replace the **first** `/` in the branch name with `:` to form the fork-qualified head ref (e.g., branch `michaelsthr/fix/outdated-expo-package` → `--head "michaelsthr:fix/outdated-expo-package"`).
 - If no PR can be determined, ask the user for the number and stop.
 
+## Orient to the PR branch
+
+Once the PR is known, get the session's **current working directory** onto that PR's branch — so the diff, the app's Files panel, and any push target all match the PR. **Run every `gh`, `git commit`, and `git push` from this directory** — it's the checkout on the PR branch and the one the app is watching. The failure to avoid is moving your working position to a *different checkout of the repo* (a sibling clone or separate worktree) to run the review or land fixes — that checks the PR branch out where the app isn't looking and pushes from where the user can't see. Editing files that physically live elsewhere (symlinked into the project, sibling packages in a monorepo) is fine: that's file location, not your working position.
+
+1. **Already on the PR's branch?** A question of *identity*, not currency: does `git branch --show-current` match the PR's head branch (for fork PRs whose local branch is renamed, fall back to `git rev-parse HEAD` vs the PR's `headRefOid`)? If yes, you're oriented — **no branch switch happens, so the guards below don't apply**. Being behind a freshly-pushed head isn't a switch either; `gh pr checkout {number}` just fast-forwards. A session already on the branch and current is a true no-op.
+2. **Otherwise — you're on a *different* branch — a switch is needed, and these guards apply to it:**
+   - **Clean tree, branch free** → `gh pr checkout {number}` to move this directory onto the PR branch.
+   - **Dirty tree** → stop and ask first. Git will happily carry uncommitted changes onto the PR branch, dragging unrelated work into the review; confirm with the user rather than switching under them.
+   - **Branch already checked out in another worktree/clone sharing this `.git`** → `gh pr checkout` fails and git names where the branch lives. Surface that and stop; do **not** relocate the user's other checkout to free the branch.
+
+Review-only (posting comments) runs off `gh pr diff` regardless of branch, but orienting up front is what makes the review step's premise that *the changes already exist locally* actually hold — the Files panel and any local file you open around the diff reflect the PR, not main — and lets direct fixes (Option 3) land without a mid-flow scramble.
+
 ## Review prompt
 
 Read [review-prompt.md](review-prompt.md) from this skill's directory (not repo cwd). Both Claude and Codex use this same prompt. Replace `{PR_NUMBER}` with the actual PR number before use.
