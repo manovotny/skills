@@ -154,6 +154,7 @@ ANNOUNCE_EOF
 - First person, as if the user is speaking — not Claude.
 - Straightforward but not cold.
 - Don't be overly apologetic.
+- If `~/.claude/skills/co-write/voice.md` exists, read it and apply the voice (medium: PR & review comments) on top of these rules.
 
 ## Re-review flow
 
