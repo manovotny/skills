@@ -19,7 +19,7 @@ Sibling skills (co-pr, co-review, co-fix) apply `voice.md` directly when writing
 
 Every mode starts by reading `voice.md` from this skill's directory (resolve relative to this SKILL.md, not the project — the skill runs from any repo).
 
-If `voice.md` is missing, or its Core voice section has no rules yet, stop and say so — the only useful next step is `/co-write learn` with samples. Never improvise a voice from generic "sound casual" defaults: no guide, no voicing.
+If `voice.md` is missing, or its Core voice section has no rules yet, write as Claude normally would and say so — the guide isn't seeded, and `/co-write learn` with samples is how to train it. Don't improvise a voice from generic "sound casual" defaults; just don't claim the output is voiced.
 
 ## Applying the voice
 
@@ -57,9 +57,9 @@ If `voice.md` is missing, or its Core voice section has no rules yet, stop and s
 
 Report, don't rewrite. Cite the specific rule or excerpt each violation conflicts with:
 
-- ❌ "utilize" — Core voice: never-words
-- ❌ closes with "Best regards" — Slack overlay: no sign-offs
-- ✅ opener matches — straight in, no greeting
+- × "utilize" — Core voice: never-words
+- × closes with "Best regards" — Slack overlay: no sign-offs
+- ✓ opener matches — straight in, no greeting
 
 End with a verdict: **passes** / **passes with nits** / **doesn't sound like the user**.
 

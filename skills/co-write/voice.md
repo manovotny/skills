@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-11. Sources: the Vercel voice-and-tone guidelines (his own rulebook), the Clerk docs styleguide, his Vercel and Next.js blog corpus, real Slack messages, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-07-11. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
