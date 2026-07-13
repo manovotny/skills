@@ -75,6 +75,7 @@ Before presenting any draft or rewrite, run check mode's comparison internally a
 2. Identify each sample's medium.
 3. Distill **operational rules** — things a writer could obey while writing. Good: "starts bullets lowercase, no trailing periods". Bad: "concise and friendly".
 4. Diff against the current guide:
+   - One data point is an edit, not a rule. A correction becomes a guide rule only when it recurs or the user says it generalizes — when in doubt, fix the instance and leave the guide alone.
    - New rules → Core voice if they show up across mediums, otherwise the medium's overlay.
    - Contradictions with existing rules → flag them and let the user pick which era of their voice wins; never silently overwrite.
    - Excerpt candidates → propose promoting a short, representative passage. Keep 2–4 per medium; when full, propose retiring the weakest.
