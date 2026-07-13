@@ -57,6 +57,8 @@ Used by both create and update modes when there are uncommitted changes.
 - **Not Planned** — anything intentionally skipped (only if relevant)
 - **References** — substantive links: related PRs/issues, Linear tickets, Slack threads, research articles, docs (only if relevant — skip tangential links)
 
+**Voice:** if `~/.claude/skills/co-write/voice.md` exists, read it and write the body prose in that voice (medium: PR & review comments). Template structure and required sections still win over voice.
+
 **Step 5 — Detect PR title style.** Run `gh pr list --state all --limit 10`. Match the dominant convention (conventional commits, ticket prefixes, sentence case, etc.).
 
 **Step 6 — Create the PR.** Use `gh pr create` with `--draft` for `/co-pr draft`. **Always pass the body via `--body-file -` with a heredoc, never inline `--body`** — inline breaks on multi-line Markdown, quotes, backticks, code fences, and callouts.
@@ -96,7 +98,7 @@ Inline prose is fair game to rewrite. Structural elements stay.
 
 If no meaningful drift, output `PR description is still accurate. No changes made.` followed by the PR URL. Stop.
 
-**Step 5 — Rewrite narrative.** Refresh stale prose to match current direction. Preserve all user-added elements identified in Step 3 — reposition is fine, remove is not.
+**Step 5 — Rewrite narrative.** Refresh stale prose to match current direction, applying the voice guide the same way as create-mode Step 4 (if `~/.claude/skills/co-write/voice.md` exists). Preserve all user-added elements identified in Step 3 — reposition is fine, remove is not.
 
 **Step 6 — Update the PR.** Use `--body-file -` with heredoc, never inline `--body`:
 

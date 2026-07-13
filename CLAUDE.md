@@ -40,3 +40,13 @@ neighborhood ("obvious or readily discoverable", "no whole-codebase archaeology"
 Some dimensions are **exclusive** and do not cross over: PR-only mechanics (CI status, base
 staleness) stay in `review-prompt.md`; whole-project-only dimensions (dependency/bundle
 health, platform features, SEO, CLI/library API design) stay in `audit-prompt.md`.
+
+## co-write's voice guide is shared data — mind the path
+
+`skills/co-write/voice.md` is the user's voice guide. It's data, not documentation:
+co-pr, co-review, and co-fix read it (via `~/.claude/skills/co-write/voice.md`) when
+writing outward-facing prose — PR bodies, review and announce comments. Renaming or
+moving it means updating those references. The guide is normally maintained through
+`/co-write learn`; manual edits follow the same rule as any skill edit (working copy,
+never `~/.claude`). Voice never overrides format: commit-message format, code-comment
+density/placement, and repo conventions win; only the prose inside them carries the voice.

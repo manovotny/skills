@@ -123,7 +123,7 @@ If updating:
 
 1. **Read the current body first** via `gh pr view --json title,body`. Do not rely on what the body looked like at the start of the loop — the user may have edited it (added Vercel previews, Linear/Slack links, screenshots, callouts) while Codex was running.
 2. **Identify preserved content** using the same heuristics as `/co-pr update` Step 3 (structural sections, callouts, images, external links to deployments/tickets/resources, code blocks).
-3. **Merge, don't replace.** Rewrite inline prose freely; reposition preserved elements if needed; never drop them.
+3. **Merge, don't replace.** Rewrite inline prose freely, applying `~/.claude/skills/co-write/voice.md` if it exists; reposition preserved elements if needed; never drop them.
 4. Use `gh pr edit --body-file -` with heredoc, never inline `--body`.
 
 ## Output
