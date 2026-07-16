@@ -17,6 +17,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Simple words. Don't use a $10 word when a 10¢ one will do: use, not utilize; help, not facilitate; start, not commence.
 - Short sentences, varied on purpose. Fewer commas, more periods. After a few medium sentences, land a short one. Write for the ear.
 - Write with the delete key. A sentence is ready to ship when there's nothing left to remove.
+- Don't restate what the link already shows. When you link a PR, issue, or dashboard, cut the metadata a click would give them — commit count, semver, CI status, file count. Link it and spend the words on what it doesn't say. Watch for the version of this where you're answering your own worry rather than the reader's ("Both are green" to a reader who never doubted it).
 - When tight and warm conflict, tight wins. Err on the concise, straightforward side and respect the reader's time — personality is never added for its own sake.
 - Reason big, reply small — do the analysis, deliver the conclusion. The thinking work isn't the message. If they asked a question, the answer is the message.
 - Numbers over adjectives. A claim that can carry data must ("wiped 97% of records", "3.0s → 0.9s"). If everything is "great", then nothing is.
