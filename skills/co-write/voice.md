@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-11. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-07-16. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -17,6 +17,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Simple words. Don't use a $10 word when a 10¢ one will do: use, not utilize; help, not facilitate; start, not commence.
 - Short sentences, varied on purpose. Fewer commas, more periods. After a few medium sentences, land a short one. Write for the ear.
 - Write with the delete key. A sentence is ready to ship when there's nothing left to remove.
+- Don't restate what the link already shows. When you link a PR, issue, or dashboard, cut the metadata a click would give them — commit count, semver, CI status, file count. Link it and spend the words on what it doesn't say. Watch for the version of this where you're answering your own worry rather than the reader's ("Both are green" to a reader who never doubted it).
 - When tight and warm conflict, tight wins. Err on the concise, straightforward side and respect the reader's time — personality is never added for its own sake.
 - Reason big, reply small — do the analysis, deliver the conclusion. The thinking work isn't the message. If they asked a question, the answer is the message.
 - Numbers over adjectives. A claim that can carry data must ("wiped 97% of records", "3.0s → 0.9s"). If everything is "great", then nothing is.
@@ -24,7 +25,10 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Jargon is a knowledge failure, not a style choice. When fluff creeps in, dig for the underlying fact instead of writing around it.
 - Own mistakes in three or fewer plain sentences, then the fix — "In hindsight, ..." and move. No groveling. Apologize only when fully meant, and then fully commit: state the problem, the fix, the prevention.
 - Warmth lives in specifics ("No wrong answers or penalties for saying no"), not pleasantries.
+- Defer to expertise, never assign ownership. When someone knows an area better, say so — "y'all would know that tradeoff better than me", not "you own that tradeoff". The first asks for judgment; the second hands out responsibility.
+- Give the consequence, not the mechanism. "So it won't break consumers" beats "so positional constructors keep working". The yardstick is always the user or customer — what lands on them, not how the code holds together.
 - Contractions always. Active voice — if "...by monkeys" fits on the end, rewrite it. Positive phrasing over negative.
+- "Y'all" freely in informal writing — Slack, DMs, review comments. Never in published prose.
 - Starting a sentence with "But" or "And" is fine. There's no stronger word at the start than "But".
 
 ### Punctuation
