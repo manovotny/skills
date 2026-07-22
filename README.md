@@ -9,6 +9,7 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 | Skill | Purpose |
 | --- | --- |
 | [`/co-audit`](skills/co-audit/SKILL.md) | Whole-project improvement audit. Claude and Codex audit the project (or a path) in parallel across performance, caching, simplicity, consistency, security, and more; Claude synthesizes one prioritized findings list, then fixes selected items or writes a report. No PR comments or GitHub posting; fixes stay local unless you explicitly ask to commit/push. |
+| [`/co-clean`](skills/co-clean/SKILL.md) | Reclaim disk space from obsolete git worktrees and merged branches, across a folder of clones or a single repo. Classifies every worktree by merge status (including squash-merges via GitHub), removes the safe ones without touching uncommitted work, triages dirty checkouts (symlinks and agent artifacts vs real work), and compacts the largest repos with `git gc`. Discovers, reports, and confirms before deleting. |
 | [`/co-fix`](skills/co-fix/SKILL.md) | Agentic peer review-and-fix loop on a PR Claude authored. Codex reviews, Claude filters feedback (rejecting overkill), fixes the code, commits, iterates until Codex is satisfied. |
 | [`/co-merge`](skills/co-merge/SKILL.md) | Merge the default branch into the current branch and resolve conflicts. Accepts the default branch's lock file and reinstalls dependency changes when needed. Code conflicts are resolved with judgment. |
 | [`/co-plan`](skills/co-plan/SKILL.md) | Iterative peer review of an implementation plan. Claude drafts, Codex reviews, Claude revises, repeat until Codex is satisfied — then a final pass strips overengineered bloat. |
@@ -62,7 +63,7 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
-The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`, `/co-watch`).
+The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-clean`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`, `/co-watch`).
 
 ## Development
 
