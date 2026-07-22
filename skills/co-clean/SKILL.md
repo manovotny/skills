@@ -11,129 +11,137 @@ Reclaim disk space trapped in obsolete git worktrees and merged branches. AI age
 
 ## The prime directive
 
-**Discover → classify → report → confirm → then delete.** Never remove anything before showing the user the plan and getting a go-ahead. Cleanup is destructive and mostly irreversible.
+**Discover everything → classify everything → report the complete plan → confirm once → then delete.** Every removal candidate — merged, squash-merged, and dirty-but-disposable alike — must appear in the report the user approves. Never delete anything that wasn't in the plan they saw. Cleanup is destructive and mostly irreversible.
 
 **Two rules decide what stays, and both must pass to remove:**
 
-1. **Merged** — the work is provably in the default branch (see classification), OR its PR is merged on GitHub.
-2. **Pushed** — nothing local-only. If it isn't on a remote, leave it.
+1. **Merged** — the work is provably in the default branch, OR its PR is merged on GitHub *and the worktree's HEAD is exactly what merged*.
+2. **Pushed** — nothing local-only, and no local commits beyond what's on the remote.
 
-> If it's unmerged **or** unpushed (local-only), leave it. Full stop.
+> If it's unmerged **or** unpushed (local-only, or ahead of the remote), leave it. Full stop.
 
-You never run a separate "is it pushed?" check — the removal gates already guarantee it: an ancestor of `origin/<default>` is on the remote, and a branch with a merged PR was pushed to open it. Everything else is left. In particular, **a branch with no PR that isn't an ancestor is treated as local-only and kept** — clean working tree or not, since it may hold unpushed commits.
+You never run a separate "is it pushed?" check — the removal gates guarantee it: an ancestor of `origin/<default>` is on the remote, and a squash-merge is only eligible when the local HEAD matches the merged PR's head commit. Everything else is left. In particular, **a branch with no PR that isn't an ancestor is treated as local-only and kept** — clean working tree or not.
 
-**A single "dirty" flag is not a reason to keep a worktree.** Git will refuse to remove a worktree with uncommitted or untracked changes — but "dirty" is often noise, not work. Always look at *what* is dirty before deciding (see [Triaging dirty worktrees](#step-7--triage-dirty-skips-look-before-you-keep)).
+**A single "dirty" flag is not a reason to keep a worktree** — but neither is a clean `git status` a reason to remove one. Git's dirty check has blind spots (ignored files, collapsed untracked directories). Classify by *what's actually on disk*, not by exit codes.
 
 ## Preconditions
 
-- **`gh` authenticated** — `gh auth status`. Needed to detect squash-merged PRs (the merge test alone can't see them). If `gh` is unavailable, say so and skip the squash-merge phase rather than guessing.
+- **`gh` authenticated** — `gh auth status`. Needed to detect squash-merged PRs (the ancestor test alone can't see them) and to verify the merged commit. If `gh` is unavailable, say so and skip the squash-merge phase rather than guessing.
 - **Never use `cd` to enter a repo for read commands.** Use `git -C <repo> …` and `gh -R <owner/repo> …`. Entering a repo directory can trigger shell/`direnv`/`corepack` hooks that print banners into your captured output and corrupt parsing.
 
 ## Flow
 
+Steps 1–5 are **read-only discovery**. Nothing is deleted until the user approves the plan in Step 6.
+
 ### Step 1 — Enumerate repos and their worktrees
 
-Find every git repo (a dir with a `.git` file or directory). For each, list worktrees in parseable form:
+A **repo** to scan is a directory with a `.git` *directory* (a `.git` *file* is itself a linked worktree — don't treat it as a separate repo). For each, list worktrees in parseable form:
 
 ```bash
 git -C "$repo" worktree list --porcelain
 ```
 
-Parse `worktree`/`HEAD`/`branch`/`detached`/`prunable` records. **Skip the main worktree** (its path equals the repo root) — you only clean *linked* worktrees.
+Parse `worktree`/`HEAD`/`branch`/`detached`/`prunable` records. Git guarantees the **first record is the main worktree** — identify it that way and skip it (you only clean *linked* worktrees). Don't identify the main worktree by comparing paths.
 
 ### Step 2 — Measure where the disk actually is
 
 `du -sh` the worktree container directories so you can prioritize and report a real number later. Common homes: `~/.claude/worktrees`, `~/.superset/worktrees`, `~/conductor/workspaces`, in-repo `.claude/worktrees`, and tool-managed feature dirs. **`du` over `node_modules` is slow — give it a long timeout or run it in the background.**
 
-### Step 3 — Classify every worktree
+### Step 3 — Classify by merge status
 
-For each linked worktree, determine its default branch and whether its HEAD is merged:
+For each linked worktree, find the default branch and test whether its HEAD is provably merged. A `git fetch` first makes classification current; without it the ancestor test can only *under*-report merges (safe — they fall through to the GitHub check), so treat the fetch as recommended-not-required and weigh it against fetching many repos.
 
 ```bash
 def=$(git -C "$repo" symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null | sed 's#refs/remotes/origin/##')
-# fallback if origin/HEAD isn't set: gh repo view --json defaultBranchRef --jq .defaultBranchRef.name
-# provably merged = HEAD is an ancestor of the (remote) default branch
-git -C "$repo" merge-base --is-ancestor "$head" "origin/$def"
+# fallback if origin/HEAD isn't set:
+# def=$(gh -R "$owner_repo" repo view --json defaultBranchRef --jq .defaultBranchRef.name)
+git -C "$repo" merge-base --is-ancestor "$head" "origin/$def"   # true = provably merged
 ```
 
-`--is-ancestor` is **conservative**: it is true only for real merges, never a false positive. Squash-merged branches will read as UNMERGED here — Step 6 catches those via GitHub.
-
-Classification reads the *local* `origin/<default>` ref. Running `git fetch` first makes it current, but **skipping the fetch is safe**: a stale ref can only misread a merged branch as UNMERGED (which Step 6 then resolves via GitHub) — it never causes a wrong removal. Fetching every repo is slow, so treat it as optional.
-
-Bucket each worktree: `PRUNABLE` (temp dir already gone) · `MERGED` (ancestor of default) · `UNMERGED` (everything else, pending the GitHub check).
+`--is-ancestor` is **conservative**: true only for real merges, never a false positive. Squash-merged branches read as UNMERGED here — Step 4 catches those. Bucket each worktree: `PRUNABLE` (temp dir gone) · `MERGED` (ancestor) · `UNMERGED` (else).
 
 > zsh gotcha: `status` is a read-only variable. Name your loop variable something else (`st`).
 
-### Step 4 — Report and confirm (the gate)
+### Step 4 — Resolve UNMERGED against GitHub (catch squash-merges, verify the commit)
 
-Show the user: total reclaimable disk, the biggest wins, and the counts per bucket. Offer scope options (merged-only / merged + GitHub-check unmerged / a single big feature). **Wait for a go-ahead before deleting anything.** Use `AskUserQuestion` for scope.
+Most "unmerged" worktrees from tool/PR-review workflows are actually **squash-merged**. But a merged PR with a given branch name does **not**, by itself, prove *this* worktree is safe — the branch may have been reused or gained local commits after the merge. Verify the commit, not just the name.
 
-### Step 5 — Prune stale refs, then remove merged worktrees
+Derive the repo slug robustly (strip a trailing `.git`) and normalize the branch ref:
 
 ```bash
-git -C "$repo" worktree prune            # clears PRUNABLE refs (real dirs already gone)
-git -C "$repo" worktree remove "$wt"     # NO --force — see below
+owner_repo=$(git -C "$repo" remote get-url origin | sed -E 's#^.*[:/]([^/]+/[^/]+?)(\.git)?$#\1#')
+branch=${branch_ref#refs/heads/}                       # porcelain gives refs/heads/<name>
+read -r pr_state pr_merged pr_oid < <(gh -R "$owner_repo" pr list --head "$branch" --state all \
+  --json state,mergedAt,headRefOid --jq '.[0] | "\(.state) \(.mergedAt) \(.headRefOid)"')
 ```
 
-**Remove without `--force`.** That makes git your safety net: it refuses any worktree with uncommitted or untracked changes, which drop into the "dirty skip" pile for Step 7 instead of being destroyed. Log removed vs skipped.
+- **PR merged (`mergedAt` set) AND `pr_oid` == the worktree's HEAD sha** → eligible for removal. The checkout is exactly what merged.
+- **PR merged but the OID differs** → the local branch diverged from what merged (reused name, or commits added after). **Keep and ask** — `-D` would destroy those commits.
+- **OPEN** → leave. **CLOSED without merge** → unmerged, leave. **No PR** → possibly local-only, leave.
 
-**Deleting the branch after its worktree is gone:**
+Detached-HEAD worktrees have no branch to look up. You *may* try to tie the commit to a merged PR (`gh -R "$owner_repo" pr list --search "$head" --state merged`), but if it doesn't cleanly resolve, **leave them**.
 
-- **Ancestor-merged** (Step 3): `git -C "$repo" branch -d "$branch"` — the *safe* delete. It succeeds precisely because the branch is merged; if it ever refuses, that's a signal to stop and recheck, not to escalate.
-- **Squash-merged** (confirmed in Step 6): `-d` will refuse (the branch isn't an ancestor), so use `git -C "$repo" branch -D "$branch"`. Only ever `-D` a branch whose merged PR you confirmed with a **repo-scoped** `gh -R "$owner_repo" --head "$branch"` lookup — branch names collide across repos, so an unscoped match can point at a different repo's PR and force-delete unmerged work.
+### Step 5 — Inventory dirty worktrees (look before you keep — or trash)
+
+For every MERGED / eligible-squash-merged worktree, inventory what's actually on disk *before* deciding — `git worktree remove` without `--force` refuses tracked/untracked changes, but it will happily delete **ignored** files, and default status **collapses untracked directories**. Enumerate fully:
+
+```bash
+git -C "$wt" status --porcelain=v1 --untracked-files=all --ignored
+```
+
+**The burden of proof is on "disposable."** A worktree is force-removable only if it has **zero tracked edits** AND every untracked *and every ignored* path is affirmatively throwaway. If even one path is something you can't confidently call throwaway, **keep the worktree and ask** — untracked/ignored + removal is unrecoverable (no reflog, no undo). Don't default an unclassified path to disposable.
+
+| On-disk state | Verdict |
+|---|---|
+| Tracked modifications/additions/**deletions** (`M`/`A`/`D`) to real files | **KEEP** — genuine uncommitted work |
+| Untracked **symlink** (usually → another clone in the same parent folder) | disposable — zero real data; removal deletes only the link, never the target |
+| Untracked/ignored `.claude/*` local config (`settings.local.json`, `launch.json`) | disposable — the user commits these if they want them |
+| Untracked agent-process artifacts (`docs/superpowers/*`, stray specs / plans / notes) | disposable — not committed by rule; confirm the *pattern*, don't assume |
+| Ignored build output (`node_modules`, `.next`, `.turbo`, `dist/`, `build/`, `.DS_Store`) | disposable |
+| Ignored **data/secrets** (`.env*`, credentials, local databases, dumps) | **KEEP and ask** — ignored ≠ worthless; these never come back |
+| Untracked **real** files/dirs — actual docs, code, data reports, or results | **KEEP** — a deliverable, not an artifact |
+| Any untracked/ignored path you can't confidently place above | **KEEP and ask** — don't guess |
+
+**Watch the lookalike.** A process artifact and a deliverable can share the `.md` extension: `docs/superpowers/plan.md` is throwaway, but a benchmark report, an analysis write-up, or anything under a `results/`/`analysis/` path is real work. The **path and content decide, not the extension** — open every file you can't classify on sight (check them all, not just one).
+
+**The disposable rows are examples, not a closed list.** The principle: things that are *throwaway by convention* look like data to a filesystem scan but carry no value. New tools invent new throwaway patterns; judge by "would the user ever commit or miss this?" and generalize.
+
+### Step 6 — Report the complete plan and confirm (the one gate)
+
+Show the user the whole plan in one place: total reclaimable disk, the biggest wins, and — grouped — every worktree that will be **pruned**, **removed** (clean merged), **force-removed** (dirty-but-disposable, with the reason), and every branch that will be deleted. Call out anything headed to keep-and-ask. **Get one go-ahead covering all of it before deleting anything.** Use `AskUserQuestion` for scope. Nothing below this line runs until they approve.
+
+### Step 7 — Execute removals
+
+```bash
+git -C "$repo" worktree prune                    # PRUNABLE: temp dirs already gone
+git -C "$repo" worktree remove "$wt"             # clean merged: no --force
+git -C "$repo" worktree remove --force "$wt"     # dirty-but-disposable only (Step 5 cleared it)
+```
+
+Then delete the branch:
+
+- **Ancestor-merged** (Step 3): `git -C "$repo" branch -d "$branch"` — the *safe* delete; it succeeds because the branch is merged. If it ever refuses, stop and recheck rather than escalating.
+- **Squash-merged** (Step 4, OID verified): `-d` refuses (not an ancestor), so use `git -C "$repo" branch -D "$branch"` — but only for a branch whose merged-PR head commit you confirmed equals its HEAD, via a **repo-scoped** `gh -R "$owner_repo"` lookup. Branch names collide across repos; an unscoped or unverified match can force-delete unmerged work.
 - **Detached HEAD**: no branch to delete.
 
 **These operations are slow** (deleting tens of GB of `node_modules`) and will time out a foreground call. Run the removal loop in the background and make it **idempotent** (skip paths already logged) so you can resume after a timeout. Don't run two removal loops against the *same* repo concurrently — you'll hit an index lock.
 
-### Step 6 — Check "unmerged" against GitHub (catch squash-merges)
-
-Most "unmerged" worktrees from tool/PR-review workflows are actually **squash-merged** — real merges the ancestor test can't see. For each unmerged worktree that has a branch:
-
-```bash
-owner_repo=$(git -C "$repo" config --get remote.origin.url | sed -E 's#.*[:/]([^/]+/[^/]+)(\.git)?$#\1#')
-gh pr list -R "$owner_repo" --head "$branch" --state all --json state,mergedAt --limit 1
-```
-
-- `mergedAt` non-null → **PR merged** → eligible for removal (Steps 5/7 rules still apply).
-- state `OPEN` → leave. state `CLOSED` without merge → **unmerged, leave it** (honors the prime directive). No PR at all → possibly local-only → leave.
-
-Detached-HEAD worktrees have no branch to look up. You *may* try to tie the checked-out commit to a PR (`gh -R "$owner_repo" pr list --search "$head" --state merged`), but if that doesn't cleanly resolve, **leave them** — an unverifiable detached HEAD is not worth the risk.
-
-### Step 7 — Triage dirty skips (look before you keep)
-
-The worktrees git refused in Step 5/6 are dirty — but "dirty" ≠ "has work." Inspect each with `git -C "$wt" status --porcelain` and judge by *what* is dirty.
-
-**The burden of proof is on "disposable."** A worktree is force-removable only if it has **zero tracked edits** AND you can *affirmatively* classify **every** untracked entry as throwaway. If even one entry is something you can't confidently call throwaway, **keep the worktree and ask** — because untracked + `--force` is unrecoverable (no reflog, no undo). Do not default an unclassified file to disposable.
-
-| Dirty state | Verdict |
-|---|---|
-| Tracked modifications/additions/**deletions** (`M`/`A`/`D`) to real files | **KEEP** — genuine uncommitted work |
-| Untracked **symlink** (usually → another clone in the same parent folder) | disposable — zero real data; removing the worktree deletes only the link, never the target |
-| Untracked `.claude/*` local config (`settings.local.json`, `launch.json`) | disposable — the user commits these if they want to keep them |
-| Untracked agent-process artifacts (`docs/superpowers/*`, stray specs / plans / brainstorm notes) | disposable — not committed by rule; confirm the *pattern*, don't assume |
-| Untracked build output (`node_modules`, `.next`, `.turbo`, `dist/`, `build/`, `.DS_Store`) | disposable |
-| Untracked **real** files/dirs — actual docs, code, data reports, or results | **KEEP** — a deliverable, not an artifact |
-| Untracked file you can't confidently place in a row above | **KEEP and ask** — don't guess |
-
-**Watch the lookalike.** A process artifact and a deliverable can share the `.md` extension: `docs/superpowers/plan.md` is throwaway, but a benchmark report, an analysis write-up, or anything under a `results/` or `analysis/` path is real work. The **path and content decide, not the extension** — open every untracked file you can't classify on sight (there may be several; check them all, not just one).
-
-**The disposable rows are examples, not a closed list.** The principle is: untracked things that are *throwaway by convention* — machine-local config, agent-process artifacts, symlinks, build output, etc. — look like work to git's dirty check but carry no committed value. Generalize it. New tools invent new throwaway patterns; judge by "would the user ever commit this?" rather than matching these three literally. Conversely, don't over-apply — a lone untracked `.md` might be a real research deliverable, so open it before deciding. When a worktree is disposable on every count, remove it with `git worktree remove --force` and delete its branch. **When in doubt, keep it and ask the user** — name the specific file that made you hesitate.
-
-Handle a corrupt worktree (its `.git` was partially deleted in an earlier timeout, so `git worktree remove` errors with "validation failed") by `rm -rf` on the directory, then `git -C "$repo" worktree prune`.
+**Corrupt worktree** (its `.git` link was partially deleted, so `git worktree remove` errors with "validation failed"): try `git -C "$repo" worktree repair "$wt"` first, then re-inventory it through Step 5. Only `rm -rf` the directory once Step 5 confirms it's disposable — corrupt metadata doesn't mean the directory is empty of real files.
 
 ### Step 8 — Compact the repos with gc
 
-Deleting branches leaves unreachable objects behind. Reclaim them:
+Deleting branches leaves unreachable objects behind. Reclaim them **after** all removals:
 
 ```bash
-git -C "$repo" gc --prune=now
+du -sh "$repo/.git"                # measure to pick targets
+git -C "$repo" gc --prune=now      # only when the repo is idle
 ```
 
-Run gc on the repos you removed branches from. If that's many, prioritize the **5–10 largest by `.git` size** (`du -sh "$repo/.git"`, sort, take the top) — that's where compaction pays off. `--prune=now` drops the now-unreachable objects while keeping reflog-reachable history, so it won't nuke your recovery net. The payoff is modest when branches were merged (their commits still live in the default branch) — that's expected; the real disk was in the worktree checkouts.
+Run gc on the repos you removed branches from; if that's many, prioritize the **5–10 largest by `.git` size**. Be precise about what `--prune=now` does: a deleted branch's reflog is gone too, so its now-unreachable commits are **permanently** dropped here (intended — you proved them merged, but it is not recoverable afterward). And `--prune=now` **risks corruption if another process writes to the repo concurrently** — only run it when nothing else is touching that repo. If you want a safety window, plain `git gc` keeps the default grace period. The payoff is modest when branches were merged (their commits still live in the default branch) — the real disk was in the worktree checkouts.
 
 ### Step 9 — Report reclaimed disk
 
-Re-measure the containers and `.git` dirs from Steps 2/8. Report a before/after table and a grand total. State plainly what was **kept and why** (real uncommitted work, open PRs, unverifiable state) so the user can trust nothing valuable was touched.
+Re-measure the containers and `.git` dirs from Steps 2/8. Report a before/after table and a grand total. State plainly what was **kept and why** (real uncommitted work, open PRs, diverged/local-only branches, ignored data, unverifiable detached HEADs) so the user can trust nothing valuable was touched.
 
 ## Output
 
@@ -143,18 +151,19 @@ Reclaimed ~<N> GB.
 Removed <count> worktrees + branches:
 - <count> stale refs pruned
 - <count> provably-merged
-- <count> squash-merged (via GitHub)
+- <count> squash-merged (GitHub-verified, HEAD matched)
 - <count> dirty-but-disposable (symlinks / local config / agent artifacts)
 
-Kept <count> (untouched): <real uncommitted work>, <open PRs>, <no-PR/local-only>, <unverifiable detached HEADs>.
+Kept <count> (untouched): <real uncommitted work>, <open PRs>, <diverged/local-only>, <ignored data>, <unverifiable detached HEADs>.
 
 git gc reclaimed ~<N> MB across the <count> largest repos.
 ```
 
 ## Error paths
 
-- **`gh` unavailable / unauthenticated** → skip Step 6, report that squash-merged worktrees couldn't be detected and were left. Don't guess merge state.
-- **`worktree remove` reports uncommitted/untracked changes** → expected; route to Step 7 triage. Never blanket `--force`.
+- **`gh` unavailable / unauthenticated** → skip Step 4, report that squash-merged worktrees couldn't be verified and were left. Don't guess merge state.
+- **Squash-merge PR found but HEAD OID doesn't match** → the local branch diverged; keep and ask. Never `-D` on a name match alone.
+- **`worktree remove` reports uncommitted/untracked changes** → expected; it went to Step 5 triage. Never blanket `--force`.
 - **Removal loop times out** → resume the idempotent background loop; it skips already-processed paths.
-- **"validation failed, cannot remove working tree"** → the worktree is corrupt; `rm -rf` the dir and `git worktree prune`.
-- **Genuinely ambiguous dirty worktree** → keep it, name the file that gave you pause, and ask the user. Never force-remove on a hunch.
+- **"validation failed, cannot remove working tree"** → try `git worktree repair`; if that fails, triage the dir (Step 5) and confirm before any `rm -rf`.
+- **Genuinely ambiguous dirty/ignored path** → keep the worktree, name the file that gave you pause, and ask. Never force-remove on a hunch.

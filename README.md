@@ -41,7 +41,7 @@ Each skill stands on its own. Use them in any order or combination that fits the
 
 - [Claude Code](https://claude.com/claude-code)
 - [Codex CLI](https://github.com/openai/codex), authenticated, with model and reasoning configured in `~/.codex/config.toml`
-- [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, `co-fix`, `co-merge`, and `co-watch`
+- [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, `co-fix`, `co-merge`, `co-watch`, and `co-clean`
 
 Use the [`skills` CLI](https://skills.sh) to install. The skills target Claude Code specifically (`--agent claude-code`).
 
