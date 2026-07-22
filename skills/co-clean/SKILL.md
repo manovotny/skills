@@ -133,6 +133,8 @@ Show the user the whole plan in one place: total reclaimable disk, the biggest w
 
 ### Step 7 — Execute removals
 
+**Revalidate immediately before each removal.** The confirmation in Step 6 can sit for a while, and the worktrees this skill targets are often still live — an agent may commit or drop a file between the plan and the delete. Just before removing each one, re-check that it still matches what was approved: HEAD still equals the planned SHA, a fresh Step 5 inventory + `submodule status` is still clean-or-disposable, and (for squash-merges) `mergeCommit` is still an ancestor of a freshly-fetched default. Before `branch -D`, confirm the branch ref still equals the approved SHA. **If anything changed, skip that worktree** and report that it needs a new plan and confirmation — never delete against a stale snapshot.
+
 ```bash
 git -C "$repo" worktree prune                    # PRUNABLE: temp dirs already gone
 git -C "$repo" worktree remove "$wt"             # clean merged: no --force
