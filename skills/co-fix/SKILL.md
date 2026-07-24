@@ -5,7 +5,7 @@ description: Use when Claude has authored code on a PR and needs agentic peer re
 
 # co-fix
 
-Run an agentic peer review loop on a pull request Claude authored. Codex reviews, Claude filters feedback (rejecting overkill into a Dismissed list), fixes the code, commits, and iterates until Codex is satisfied or the loop hits its cap.
+Run an agentic peer review loop on a pull request Claude authored. Codex reviews, Claude filters feedback (rejecting overkill into a Dismissed list) along with CI failures and bot reviewer comments, fixes the code, commits, replies to bot threads, and iterates until Codex is satisfied or the loop hits its cap.
 
 **Do not use this skill to create a PR.** If no PR exists, run `/co-pr draft` first.
 
@@ -72,7 +72,7 @@ CO_FIX_EOF
 
 The Dismissed list is still worth appending explicitly — it signals intent clearly ("I've decided these are out of scope") even though Codex could infer it from session history.
 
-**Step 4 — Check CI status.** After receiving Codex's review, also check PR checks:
+**Step 4 — Check CI status and bot reviewer threads.** After receiving Codex's review, also check PR checks:
 
 ```bash
 gh pr checks --json name,state,bucket,link,description
@@ -80,14 +80,18 @@ gh pr checks --json name,state,bucket,link,description
 
 Treat CI failures as first-class findings alongside Codex's code review — a broken build matters as much as a code comment. Investigate failures with `gh run view <run-id> --log-failed` and fix them in the same pass as code review findings.
 
+Then pull both PR comment streams (`gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments` and `gh api --paginate repos/{owner}/{repo}/issues/{pr}/comments`) and collect **bot reviewer comments** — authors with `user.type == "Bot"` raising code concerns (CodeRabbit, Cursor's Bugbot, the ChatGPT/Codex connector, Macroscope, …); skip non-review bot noise (deploy previews, coverage summaries, changelog bots) and anything that already has a human reply. Re-fetch every round — bots often comment while the loop runs. **Track candidates by revision, keyed on `(stream, id, updated_at)`**, not by id alone: CodeRabbit revises its summary in place, so a changed `updated_at` on an id you already answered makes it a candidate again. Bot findings are candidates for Step 6's filter, not obligations.
+
+Record each candidate as **stream plus id**, because the two streams are separate id spaces and only inline comments are repliable: an inline thread root (reply via its review comment id) or a top-level issue comment (no reply thread — answered PR-wide). Step 8b routes on this.
+
 **Step 5 — Handle Codex errors.** If `codex exec` fails (non-zero exit, empty response, timeout, not installed), stop the loop and tell the user. There is no fallback reviewer here — Codex is the only reviewer.
 
-**Step 6 — Apply judgment.** Process Codex's findings and CI failures together:
+**Step 6 — Apply judgment.** Process Codex's findings, CI failures, and bot reviewer threads together:
 - Do not blindly accept feedback.
 - Keep findings that improve correctness, maintainability, performance, or test coverage.
 - **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
 - Reject overkill, premature abstraction, pedantry, and out-of-scope work.
-- Track rejected items in a **Dismissed** list (for round 2+ context and possible PR body update).
+- Track rejected items in a **Dismissed** list (for round 2+ context, bot-thread replies, and possible PR body update).
 
 **Step 7 — Fix the code.** Make the smallest change that fully addresses each accepted finding. If the clean fix is broader than the feature deserves, surface that instead of smuggling in a refactor. Commit granularity is judgment-based:
 - Multiple related fixes (e.g., type safety) → 1 commit
@@ -96,7 +100,24 @@ Treat CI failures as first-class findings alongside Codex's code review — a br
 
 **Don't dismiss diagnostics as "pre-existing."** If diagnostics, LSP output, or linter warnings surface in changed files or their direct ripple — unused code, type errors, deprecated APIs, etc. — treat them as actionable alongside the accepted findings. Either fix them in the same pass or surface them for the user's call. Pre-existence alone is not grounds for dismissal.
 
-**Step 8 — Pre-commit and push.** Run the shared pre-commit flow on the fixes (lint/format always, tests/typechecks when meaningful). Commit and push. **No amending.**
+**Step 8 — Pre-commit and push.** If the round produced fixes, run the shared pre-commit flow on them (lint/format always, tests/typechecks when meaningful), commit, and push. **No amending.** A round that accepted nothing has nothing to commit — skip straight to Step 8b rather than manufacturing a commit.
+
+**Step 8b — Answer bot reviewer comments.** Right after this round's push — or immediately, when the round produced no commits — close the loop on every bot comment triaged this round. One answer each, posted autonomously (co-fix already commits and pushes unattended):
+
+- **Fixed** → "Fixed in abc1234." — plain-text hash so GitHub renders the commit link.
+- **Dismissed** → the skip reason, brief and direct — not apologetic. A dismissal never waits on a commit; it stands on its own.
+
+**Route by stream (from Step 4) — the two id spaces are not interchangeable.** An inline thread root is repliable:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{pr}/comments/{review_comment_id}/replies -F body=@- <<'REPLY_EOF'
+Fixed in abc1234.
+REPLY_EOF
+```
+
+A top-level bot comment has no reply thread, and its issue comment id sent to that endpoint fails — answer those in one combined `gh pr comment` instead, naming the bot you're answering.
+
+**Re-fetch each thread immediately before posting.** Codex runs and fixes take time, so a human may have replied since Step 4 — skip any root that has since gained one. Answer each `(stream, id, updated_at)` revision at most once: an unchanged revision you already answered stays untouched, while a revised one is answered again, covering only what changed since the revision you answered before. Write replies first person as the user; if `~/.claude/skills/co-write/voice.md` exists, apply it (medium: PR & review comments).
 
 **Step 9 — Check termination.** Look for satisfaction signals in Codex's response:
 - "this is ready"
@@ -131,8 +152,10 @@ If updating:
 When the loop finishes successfully, print:
 
 ```
-Fixed N issues, dismissed M. X commits pushed.
+Fixed N issues, dismissed M. X commits pushed. Replied to K bot threads.
 [PR URL]
 ```
+
+Drop the bot-threads clause when there were none.
 
 If the loop stops because of a Codex failure or the 4-round cap, explain what happened and stop.

@@ -41,6 +41,7 @@ Announce: **"Starting parallel review of PR #{number}."**
 - `gh pr view {number}` for title, description, and linked references; follow linked PRs/repos
 - Project context files — CLAUDE.md, AGENTS.md, CONTRIBUTING*, STYLEGUIDE* (following one-hop `@`/pointer imports)
 - Authoritative sources — enumerate what this PR's claims depend on (upstream/sibling repos, dependency package sources, vendored code, API/spec definitions, generated artifacts; reachable via symlink, local clone, or installed package), note which are reachable versus missing, and ask the user for missing ones that block real verification
+- Existing PR threads — bot reviewer comments (CodeRabbit, Cursor's Bugbot, the ChatGPT/Codex connector, Macroscope, …) enter the review as candidate findings to judge, never to blindly accept
 - CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context
 
 **Step 2 — Parallel review.** Kick off Codex in the background with `run_in_background: true` and a timeout of `600000` ms:
@@ -65,6 +66,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 - Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry
 - **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
 - **Fold in CI failures and staleness as repo-level findings.** Treat failing/errored CI checks as findings at the severity the failure warrants (flag obvious infra/flake as such, not as a code bug). If Claude and Codex report the same CI failure, list it once. A `BEHIND`/stale base is its own finding; recommend `/co-merge`. These have no file anchor — mark them repo-level so posting routes them correctly (see Option 1). They come from reading check status, not from running builds locally.
+- **Fold in bot reviewer comments.** A bot-raised finding that survives judgment joins the issue list carrying its `Bot thread` or `Bot top-level` reference — posting routes on that field instead of stacking a duplicate comment on the same anchor. If Claude or Codex independently found the same issue, merge them; the bot comment wins the anchor. Skipped ones go to **Dismissed** with rationale — every triaged bot comment gets an answer once the user picks a posting option (see "Bot reviewer thread replies").
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
 - **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]` for an objective claim blocked on a missing authoritative source). The user shouldn't have to ask.
@@ -156,6 +158,36 @@ ANNOUNCE_EOF
 - Don't be overly apologetic.
 - If `~/.claude/skills/co-write/voice.md` exists, read it and apply the voice (medium: PR & review comments) on top of these rules.
 
+## Bot reviewer thread replies
+
+Pre-review collects bot reviewer comments; synthesis gives each a verdict (in the issue list, or Dismissed). When the user picks a posting option, close the loop on every triaged bot comment in the same pass — one answer each:
+
+- **Accepted + fixed directly (Option 3):** "Fixed in abc1234." — post after the push; plain-text hash so GitHub links the commit, same as the announce comment.
+- **Accepted, left as a comment for the author (Options 1–2):** agree it's worth addressing, plus anything the thread is missing (a sharper fix, a caveat). If the bot already said it all, a one-line agreement is enough.
+- **Dismissed:** the skip reason, brief and direct.
+
+**Route by stream — the two id spaces are not interchangeable.** A `Bot thread` finding is an inline thread root; reply to its review comment id:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{pr}/comments/{review_comment_id}/replies -F body=@- <<'REPLY_EOF'
+Fixed in abc1234.
+REPLY_EOF
+```
+
+A `Bot top-level` finding has no reply thread, and an issue comment id sent to that endpoint fails. Those answers go in a PR-wide comment, and **any `Bot top-level` verdict guarantees one gets posted** — CI and staleness findings are not what earns it:
+
+- Repo-level findings are already going out as a top-level comment (Option 1) → fold the bot answers into it.
+- Otherwise → post one dedicated `gh pr comment` carrying them. This is the Option 2 case, where repo-level findings live in the submitted review body and bot answers can't ride along.
+- Never append them to the direct-fix announce comment — that comment has a fixed structure (opening line, bullets, nothing after). Option 3 posts them separately.
+
+Name the bot you're answering in each.
+
+Replies post immediately — they cannot ride in a pending review — so they go out in the same pass as the user's chosen option, never before the choice.
+
+**Re-check each thread immediately before posting, not at pre-review.** Minutes or hours pass while the review is presented and the user decides. Re-fetch, then skip any root that has since gained a human reply — that guard only holds if it's checked at post time.
+
+**Dedupe on the revision, not the id.** The key is `(stream, id, updated_at)`, and each revision gets answered at most once. A bot that revises a summary in place keeps its id, so a changed `updated_at` makes it a candidate again — triage it, and answer only what's new or changed since the revision you already answered, not the whole comment over. An unchanged revision is already answered and stays untouched. Tone rules and voice are the same as review comments.
+
 ## Re-review flow
 
 Triggered by natural language: "re-review", "review again", "author made changes", etc. Claude recognizes a re-review because the conversation already contains the previous issue list.
@@ -180,6 +212,7 @@ Both check:
 - Which previously flagged issues were addressed
 - Which remain unresolved
 - Any new concerns introduced by the changes
+- Any bot reviewer comment whose `(stream, id, updated_at)` revision hasn't been answered yet — new comments and in-place revisions both qualify — triaged and answered per "Bot reviewer thread replies"; unchanged revisions stay untouched
 
 **Step 3 — Synthesize.** Produce a categorized breakdown:
 
