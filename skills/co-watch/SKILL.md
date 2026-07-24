@@ -44,7 +44,6 @@ Persist a JSON state file at `<scratchpad>/co-watch-state.json` (the session scr
 - `lastReviewedSha` — the head SHA the most recent review/re-review covered.
 - `lastSeenIssueComment` — cursor `{ createdAt, id }` for the newest issue comment seen, or `null` if the stream has none.
 - `lastSeenReviewComment` — cursor `{ createdAt, id }` for the newest review (inline) comment seen, or `null` if the stream has none.
-- `botRevisions` — map of `"{stream}:{id}"` → that comment's last-seen `updated_at`, for bot-authored comments only (`issue:` / `review:` stream prefixes). The two cursors above move by `(created_at, id)`, which an in-place edit doesn't change; this map is what makes a revised comment visible. Bot-scoped on purpose — a person editing their own comment is usually fixing a typo, while a bot rewriting its summary is new feedback.
 
 An active watch is detected by this file existing with a non-empty `watchId`.
 
@@ -53,9 +52,9 @@ An active watch is detected by this file existing with a non-empty `watchId`.
 1. Resolve the PR and interval (see Invocation).
 2. **A state file already exists for this PR:**
    - **No interval passed** → treat it as a status query: report current state (PR, interval, `lastReviewedSha`, the two comment cursors) and stop. Do not start a second loop.
-   - **Interval passed** → update `interval`, rotate `watchId` to a fresh value (this supersedes the prior wakeup via the generation guard), keep the existing `lastReviewedSha`, comment cursors, and `botRevisions`, write state, and schedule the next tick. Do not re-baseline.
+   - **Interval passed** → update `interval`, rotate `watchId` to a fresh value (this supersedes the prior wakeup via the generation guard), keep the existing `lastReviewedSha` and comment cursors, write state, and schedule the next tick. Do not re-baseline.
 3. **A state file exists for a different PR** → tell the user a watch is already active on PR #X and ask whether to replace it. Only on confirmation, overwrite the state with a fresh `watchId` for the new PR (this supersedes the old loop via the generation guard).
-4. **Otherwise initialize:** set a new `watchId`; capture `pr`, `ownerRepo`, `interval`, `worktreePath`, `codexSessionId`; baseline `lastReviewedSha` to the current `headRefOid`; baseline each comment cursor to the newest existing comment in that stream (`{ createdAt, id }`), or `null` if the stream has no comments; baseline `botRevisions` to the current `updated_at` of every bot-authored comment already present — so only activity *after* startup is reported.
+4. **Otherwise initialize:** set a new `watchId`; capture `pr`, `ownerRepo`, `interval`, `worktreePath`, `codexSessionId`; baseline `lastReviewedSha` to the current `headRefOid`; baseline each comment cursor to the newest existing comment in that stream (`{ createdAt, id }`), or `null` if the stream has no comments — so only activity *after* startup is reported.
 5. Write the state file, tell the user the watch started (PR + interval), and schedule the first tick with `ScheduleWakeup`. Convert the interval to seconds for the delay, and use a prompt that re-enters this skill and carries the generation token, e.g. *"Run the co-watch tick from `<scratchpad>/co-watch-state.json` (watchId=`<watchId>`)."*
 
 ## Tick logic
@@ -85,12 +84,8 @@ Compare `gh pr view {pr} --json headRefOid` against `lastReviewedSha`. If it cha
   - Issue comments: `gh api --paginate repos/{ownerRepo}/issues/{pr}/comments`
   - Review (inline) comments: `gh api --paginate repos/{ownerRepo}/pulls/{pr}/comments`
 - In each stream, select comments newer than that stream's cursor (`lastSeenIssueComment` / `lastSeenReviewComment`) by `(created_at, id)` ordering: a comment is new when its `created_at` is later than the cursor's `createdAt`, **or** `created_at` equals `createdAt` **and** its `id` is **greater than** the cursor's `id` (a `null` cursor means every comment is new). The `id` tiebreak matters because one review submission posts several inline comments sharing the same `created_at`; GitHub comment ids increase with creation, so a larger id is newer.
-- **Also catch revised bot comments.** A bot that rewrites its summary in place (CodeRabbit does this) keeps its `id` and `created_at`, so the cursor above never sees it. For each bot-authored comment (`user.type == "Bot"`), classify by the first rule that matches and stop there, so no comment is reported twice:
-  1. **Cursor-selected as new** → report it as a new comment, not a revision, and seed `botRevisions["{stream}:{id}"]` with its `updated_at`.
-  2. **Otherwise, an entry exists and `updated_at` has advanced** → report it as a revision and write the fresh value back.
-  3. **Otherwise, no entry exists** → the comment predates this map, either as history from before the watch started or on the first tick after an existing watch picked up this field. Seed it silently and report nothing.
 - **Always advance each cursor** to the maximum fetched comment by `(created_at, id)` in that stream — including comments filtered out as the user's own — so the loop never re-processes them.
-- For **notification**, drop comments authored by the user (`gh api user --jq .login`). If any remain → push-notify and print an in-session summary (author, file/line for review comments, a snippet, and the link). Carry each bot item's `(stream, id, updated_at)` into the summary so a later `/co-review` pass can apply its own revision dedupe.
+- For **notification**, drop comments authored by the user (`gh api user --jq .login`). If any remain → push-notify and print an in-session summary (author, file/line for review comments, a snippet, and the link).
 - Non-blocking — continue to the scheduling step.
 
 ### 4. Nothing new
@@ -131,5 +126,5 @@ Silent no-op ticks (nothing changed) produce no notification.
 ## Error handling
 
 - A failing check on a tick (network blip, `gh` hiccup, Codex error) → notify the user that the tick errored and **keep the heartbeat alive** by completing the scheduling step (reschedule), rather than dying silently. (Codex failing specifically is non-fatal: re-review continues with Claude alone, same as co-review.)
-- A tick that fails **before** re-review synthesis completes leaves `lastReviewedSha`, the comment cursors, and `botRevisions` unchanged, so the next tick retries the same head/comments rather than skipping them.
+- A tick that fails **before** re-review synthesis completes leaves `lastReviewedSha` and the comment cursors unchanged, so the next tick retries the same head/comments rather than skipping them.
 - Never post to GitHub or commit unattended. Surfacing findings is in-session only.
