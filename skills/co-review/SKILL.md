@@ -174,11 +174,19 @@ Fixed in abc1234.
 REPLY_EOF
 ```
 
-A `Bot top-level` finding has no reply thread, and an issue comment id sent to that endpoint fails. Answer those inside the same PR-wide `gh pr comment` that carries the repo-level findings, naming the bot you're answering.
+A `Bot top-level` finding has no reply thread, and an issue comment id sent to that endpoint fails. Those answers go in a PR-wide comment, and **any `Bot top-level` verdict guarantees one gets posted** — CI and staleness findings are not what earns it:
+
+- Repo-level findings are already going out as a top-level comment (Option 1) → fold the bot answers into it.
+- Otherwise → post one dedicated `gh pr comment` carrying them. This is the Option 2 case, where repo-level findings live in the submitted review body and bot answers can't ride along.
+- Never append them to the direct-fix announce comment — that comment has a fixed structure (opening line, bullets, nothing after). Option 3 posts them separately.
+
+Name the bot you're answering in each.
 
 Replies post immediately — they cannot ride in a pending review — so they go out in the same pass as the user's chosen option, never before the choice.
 
-**Re-check each thread immediately before posting, not at pre-review.** Minutes or hours pass while the review is presented and the user decides. Re-fetch, then skip any root that has since gained a human reply or an answer of your own: "never where a human already replied, never twice" only holds if it's checked at post time. On re-review, triage bot comments that are new **or materially updated** since the last pass — compare `created_at` and `updated_at`, since CodeRabbit and friends revise a summary in place rather than posting again. Tone rules and voice are the same as review comments.
+**Re-check each thread immediately before posting, not at pre-review.** Minutes or hours pass while the review is presented and the user decides. Re-fetch, then skip any root that has since gained a human reply — that guard only holds if it's checked at post time.
+
+**Dedupe on the revision, not the id.** The key is `(stream, id, updated_at)`, and each revision gets answered at most once. A bot that revises a summary in place keeps its id, so a changed `updated_at` makes it a candidate again — triage it, and answer only what's new or changed since the revision you already answered, not the whole comment over. An unchanged revision is already answered and stays untouched. Tone rules and voice are the same as review comments.
 
 ## Re-review flow
 
@@ -204,7 +212,7 @@ Both check:
 - Which previously flagged issues were addressed
 - Which remain unresolved
 - Any new concerns introduced by the changes
-- Any bot reviewer comments that arrived — or were materially updated — since the last pass, triaged and answered per "Bot reviewer thread replies"; already-answered threads stay untouched
+- Any bot reviewer comment whose `(stream, id, updated_at)` revision hasn't been answered yet — new comments and in-place revisions both qualify — triaged and answered per "Bot reviewer thread replies"; unchanged revisions stay untouched
 
 **Step 3 — Synthesize.** Produce a categorized breakdown:
 

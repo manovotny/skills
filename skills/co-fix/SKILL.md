@@ -80,7 +80,7 @@ gh pr checks --json name,state,bucket,link,description
 
 Treat CI failures as first-class findings alongside Codex's code review — a broken build matters as much as a code comment. Investigate failures with `gh run view <run-id> --log-failed` and fix them in the same pass as code review findings.
 
-Then pull both PR comment streams (`gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments` and `gh api --paginate repos/{owner}/{repo}/issues/{pr}/comments`) and collect **bot reviewer comments** — authors with `user.type == "Bot"` raising code concerns (CodeRabbit, Cursor's Bugbot, the ChatGPT/Codex connector, Macroscope, …); skip non-review bot noise (deploy previews, coverage summaries, changelog bots) and anything that already has a human reply. Re-fetch every round — bots often comment while the loop runs — and treat a comment as fresh when it is new **or materially updated** since the last round (compare `created_at` and `updated_at`; CodeRabbit revises its summary in place). Bot findings are candidates for Step 6's filter, not obligations.
+Then pull both PR comment streams (`gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments` and `gh api --paginate repos/{owner}/{repo}/issues/{pr}/comments`) and collect **bot reviewer comments** — authors with `user.type == "Bot"` raising code concerns (CodeRabbit, Cursor's Bugbot, the ChatGPT/Codex connector, Macroscope, …); skip non-review bot noise (deploy previews, coverage summaries, changelog bots) and anything that already has a human reply. Re-fetch every round — bots often comment while the loop runs. **Track candidates by revision, keyed on `(stream, id, updated_at)`**, not by id alone: CodeRabbit revises its summary in place, so a changed `updated_at` on an id you already answered makes it a candidate again. Bot findings are candidates for Step 6's filter, not obligations.
 
 Record each candidate as **stream plus id**, because the two streams are separate id spaces and only inline comments are repliable: an inline thread root (reply via its review comment id) or a top-level issue comment (no reply thread — answered PR-wide). Step 8b routes on this.
 
@@ -117,7 +117,7 @@ REPLY_EOF
 
 A top-level bot comment has no reply thread, and its issue comment id sent to that endpoint fails — answer those in one combined `gh pr comment` instead, naming the bot you're answering.
 
-**Re-fetch each thread immediately before posting.** Codex runs and fixes take time, so a human may have replied since Step 4; skip any root that has since gained a human reply, and never answer the same comment twice across rounds. Write replies first person as the user; if `~/.claude/skills/co-write/voice.md` exists, apply it (medium: PR & review comments).
+**Re-fetch each thread immediately before posting.** Codex runs and fixes take time, so a human may have replied since Step 4 — skip any root that has since gained one. Answer each `(stream, id, updated_at)` revision at most once: an unchanged revision you already answered stays untouched, while a revised one is answered again, covering only what changed since the revision you answered before. Write replies first person as the user; if `~/.claude/skills/co-write/voice.md` exists, apply it (medium: PR & review comments).
 
 **Step 9 — Check termination.** Look for satisfaction signals in Codex's response:
 - "this is ready"
