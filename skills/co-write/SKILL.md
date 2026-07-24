@@ -74,6 +74,8 @@ Before presenting any draft or rewrite, run check mode's comparison internally a
 1. Confirm the samples are the user's own unedited writing (not Claude's, not group-edited). Ask if unsure — mixed sources dilute the voice.
 2. Identify each sample's medium.
 3. Distill **operational rules** — things a writer could obey while writing. Good: "starts bullets lowercase, no trailing periods". Bad: "concise and friendly".
+   - Rules outlive jobs — state the pattern, not the instance. "Full signature (if present) on the first email", never the signature block spelled out; "'we' speaks from the team or company angle", never "'we' speaks for <employer>". Employer, product, and team names are provenance: they belong in the sources header, not inside a rule.
+   - When a rule holds for some readers but not others, split the overlay by audience (users and contributors vs. partners and vendors), never by employer or product.
 4. Diff against the current guide:
    - One data point is an edit, not a rule. A correction becomes a guide rule only when it recurs or the user says it generalizes — when in doubt, fix the instance and leave the guide alone.
    - New rules → Core voice if they show up across mediums, otherwise the medium's overlay.
