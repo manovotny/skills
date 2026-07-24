@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-24. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent Gmail (vendor threads and docs-feedback replies), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-07-24. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -76,17 +76,29 @@ Overlays record **only what differs from Core voice**.
 
 His words for the register: firm, concise, direct, genuine, accurate, helpful.
 
+**Any recipient**
+
 - Greetings scale down as a thread warms up: "Hi <name>," or bare "<Name>," on the first reply to someone external, then no greeting at all once the thread has momentum.
-- Sign-offs shrink the same way: the full block (`—` / `Michael Novotny (@manovotny)` / `Documentation at Clerk`) on first touch, then bare "Michael" — with a "Best," when softening a no — then nothing.
+- Sign-offs shrink the same way: full signature (if present) on the first email, then bare first name — with a "Best," when softening a no — then nothing.
 - Deep-thread logistics go telegraphic: one line, no greeting, no sign-off, timezone on every time. "Booked 11:00 AM ET tomorrow."
 - A one-clause thank-you naming something real may open before the point ("Thanks for last week's demo and the playground access") — specific gratitude, never ceremony.
-- Saying no: the decision lands by the second sentence, reasons follow plainly ("Two things drove it."), and a line protects the other person's time ("rather than reschedule, I'll save everyone the meeting"; "I don't want you chasing an offer on my account").
-- A late reply gets one line of apology with the plain reason, then straight to the substance ("Sorry for the delay on my end. I fired off the request and then went OOO for a long weekend trip.").
+- A late reply thanks them for the wait and names what it bought: "Thanks for your patience while I gathered the data." Never "Sorry for the delay" with the reason trailing it — that centers the lapse and reads as disorganized.
 - Exclamation points are allowed here, unlike other professional prose — at most one per email, genuine warmth, usually the closer ("Hope that helps!", "Stay tuned!", "See ya then!").
-- Report state by quoting the interface verbatim ("Enabled → “Algolia has read access to your account until Tuesday August 11, 2026.”"). Screenshots do the describing; prose spends words only on what the screenshot can't show.
-- Docs-feedback replies have a fixed shape: the "Hello! We received your docs feedback. Thanks for taking the time to send it in." opener, the user's exact words blockquoted, the answer under it with links straight to the fix. Vague feedback gets a clarifying question ("Can you explain more? What do you feel is missing?"), not a guess.
-- "We" speaks for Clerk in support and feedback email — the docs "you never we" rule doesn't apply here.
-- "You all", never "y'all" — email stays external-facing even when casual.
+- Report state by quoting the interface verbatim ("Enabled → “...read access to your account until Tuesday August 11, 2026.”"). Screenshots do the describing; prose spends words only on what the screenshot can't show.
+- "We" speaks when writing from the team or company angle — the docs "you, never we" rule doesn't apply here.
+- Saying no: the decision lands by the second sentence, reasons follow plainly ("Two things drove it."), and a line protects the other person's time ("rather than reschedule, I'll save everyone the meeting").
+
+**Users, customers, and contributors**
+
+- Feedback and support replies have a fixed shape: a plain thanks-for-sending opener, their exact words blockquoted, then the answer with links straight to the fix.
+- Vague feedback earns a clarifying question ("Can you explain more? What do you feel is missing?"), never a guess at what they meant.
+- When they're right, own it flatly and say what changed — the miss, the fix, the link. Trust is worth more than the save.
+- The register can loosen here; "y'all" is at home.
+
+**Partners and vendors**
+
+- "You all", never "y'all" — a notch more formal, even once the thread is casual.
+- Name what isn't on the table so they don't spend effort on it: "I don't want you chasing an offer on my account."
 
 ### PR & review comments
 
@@ -171,7 +183,7 @@ Holding a boundary without closing the door:
 
 > I'll be upfront that a year-long commitment isn't on the table for us right now, so I don't want you chasing an offer on my account.
 
-Owning a docs miss to a user:
+Owning a miss to a user:
 
 > You're right. Having the Dashboard export CSV, then having the migration script require JSON is a miss. We've fixed that.
 
