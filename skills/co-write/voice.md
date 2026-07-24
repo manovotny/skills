@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-16. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-07-24. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -72,6 +72,34 @@ Overlays record **only what differs from Core voice**.
 - Emojis are a language on Slack, and the one place they belong: message templates (reviews, team updates, team metrics), emoji reactions, emoji-only replies, and workflow markers (`:ready-for-review:` + linked PR title + "→ one-line context").
 - The core Never list softens here: a casual "just" ("Monday is just fine"), "really", or "great suggestion" is human speech, not filler. The bans bite hardest in published prose.
 
+### Email
+
+His words for the register: firm, concise, direct, genuine, accurate, helpful.
+
+**Any recipient**
+
+- Greetings scale down as a thread warms up: "Hi <name>," or bare "<Name>," on the first reply to someone external, then no greeting at all once the thread has momentum.
+- Sign-offs shrink the same way: full signature (if present) on the first email, then bare first name — with a "Best," when softening a no — then nothing.
+- Deep-thread logistics go telegraphic: one line, no greeting, no sign-off, timezone on every time. "Booked 11:00 AM ET tomorrow."
+- A one-clause thank-you naming something real may open before the point ("Thanks for last week's demo and the playground access") — specific gratitude, never ceremony.
+- A late reply thanks them for the wait and names what it bought: "Thanks for your patience while I gathered the data." Never "Sorry for the delay" with the reason trailing it — that centers the lapse and reads as disorganized.
+- Exclamation points are allowed here, unlike other professional prose — at most one per email, genuine warmth, usually the closer ("Hope that helps!", "Stay tuned!", "See ya then!").
+- Report state by quoting the interface verbatim ("Enabled → “...read access to your account until Tuesday August 11, 2026.”"). Screenshots do the describing; prose spends words only on what the screenshot can't show.
+- "We" speaks when writing from the team or company angle — the docs "you, never we" rule doesn't apply here.
+- Saying no: the decision lands by the second sentence, reasons follow plainly ("Two things drove it."), and a line protects the other person's time ("rather than reschedule, I'll save everyone the meeting").
+
+**Users, customers, and contributors**
+
+- Feedback and support replies have a fixed shape: a plain thanks-for-sending opener, their exact words blockquoted, then the answer with links straight to the fix.
+- Vague feedback earns a clarifying question ("Can you explain more? What do you feel is missing?"), never a guess at what they meant.
+- When they're right, own it flatly and say what changed — the miss, the fix, the link. Trust is worth more than the save.
+- The register can loosen here; "y'all" is at home.
+
+**Partners and vendors**
+
+- "You all", never "y'all" — a notch more formal, even once the thread is casual.
+- Name what isn't on the table so they don't spend effort on it: "I don't want you chasing an offer on my account."
+
 ### PR & review comments
 
 - First person, as if he's speaking. Lead with the issue or the change, then the evidence, then the question, suggestion, or recommendation.
@@ -140,6 +168,28 @@ Owning a miss, no groveling or apologizing:
 > In hindsight, I over-analyzed this in trying to walk the line between saying "yes" (because I do think Docs should own most of this) and taking on more than we can chew.
 >
 > I gave you a philosophy, you want a decision.
+
+### Email
+
+Saying no — decision first, reasons plain, nobody's time wasted:
+
+> I've got a hard conflict with tomorrow's meeting slot, and rather than reschedule, I'll save everyone the meeting: we've decided not to move forward with the upgrade at this time.
+>
+> Two things drove it. The relevance improvement wasn't enough to justify doubling our spend. And the odd results we dug into on the call turned out to be fixable in our current setup — those same queries now rank the way we want on the plan we're already on.
+>
+> So our path right now is to keep investing in the existing indexing. Appreciate the time you all put into this; it made our search better either way.
+
+Holding a boundary without closing the door:
+
+> I'll be upfront that a year-long commitment isn't on the table for us right now, so I don't want you chasing an offer on my account.
+
+Owning a miss to a user:
+
+> You're right. Having the Dashboard export CSV, then having the migration script require JSON is a miss. We've fixed that.
+
+Deep-thread logistics:
+
+> Booked 11:00 AM ET tomorrow.
 
 ### Blog & long-form
 
