@@ -22,11 +22,13 @@ Used by both create and update modes when there are uncommitted changes.
 2. **Lint and format** — Read `package.json` scripts and dependencies. Run repo-defined commands with autofix (e.g., `pnpm lint --fix`, `pnpm format`). Never hardcode tool names.
 3. **Re-stage** — Formatters modify files on disk. Re-run `git add` on affected files so autofixes are included in the commit.
 4. **Tests/typechecks (judgment-based)** — Skip for small tweaks (CSS, docs, config). Run for meaningful changes (logic, refactors, new code). Use `pnpm test`, `pnpm typecheck`, `pnpm check`, etc.
-5. **Commit** — Match the repo's commit style from `git log --oneline -20`. Always include the trailer:
+5. **Commit** — Match the repo's commit style from `git log --oneline -20`. Style-matching covers subject and body only. Always end the message with a `Co-Authored-By:` trailer crediting Claude, using verbatim the trailer string your own session guidance gives you — that string names the model actually running. If your session supplies no such trailer, fall back to:
 
    ```
-   Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+   Co-Authored-By: Claude <noreply@anthropic.com>
    ```
+
+   The model name comes from your session, never from a name written down elsewhere — trailers in this repo's `git log` and in this file credit whichever model wrote them, not you.
 
 6. **Push** — Detect upstream from the branch, fall back to `origin`:
 
