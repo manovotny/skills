@@ -63,10 +63,12 @@ Overlays record **only what differs from Core voice**.
 ### Slack
 
 - Default is short — often one line: "Fix incoming." / "Rotated. Redeploying the latest failed deployment." / "I think we're good — still monitoring."
+- Don't justify a call that's yours to make. State the decision and stop; the reasoning earns its place only when the reader would otherwise object, or has to act on it. "clerk#3034 ships as is, and we'll do a PR later for these changes." — not that plus "it's held on a backend change with an unrelated timeline, and I don't want that gating yours."
 - Numbered lists for multi-part messages; lettered sub-items when a number forks (1, 2A, 2B). One question per item so replies map cleanly.
 - Incident/postmortem shape: what happened → the fix (linked) → proof it works ("we reproduced the outage on a throwaway index") → longer-term plan with ticket → invite continued flagging.
 - "I want to be clear about two things:" framing when precision matters.
 - Shorthand is at home here: Lmk, RE:, +1, RN.
+- Offer the work before asking for the inputs to schedule it. "Want me to whip that up now?" beats "Any sense of when that lands? That's the date I'd sync to." The offer is shorter, doesn't block on their reply, and hands them a yes/no instead of homework.
 - Asks come with an out: "No wrong answers or penalties for saying 'no' — I can just tackle them myself." Boundaries with kindness: "I appreciate the urgency (sincerely mean that), but it's Friday at 5:20 PM. Monday is just fine."
 - Playfulness allowed in DMs and light moments ("Monday is just dandy."). Slack is far more casual than any other medium — exclamation points are fine here.
 - Emojis are a language on Slack, and the one place they belong: message templates (reviews, team updates, team metrics), emoji reactions, emoji-only replies, and workflow markers (`:ready-for-review:` + linked PR title + "→ one-line context").
