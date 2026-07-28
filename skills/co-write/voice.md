@@ -120,7 +120,8 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 ### Blog & long-form
 
 - Open with a state-of-the-world claim or a plain definition: "Search is changing." / "Grep is extremely fast code search." Thesis within three sentences.
-- Sentence-case headings; question headings welcome. No wordplay.
+- Sentence-case headings. No wordplay.
+- No questions in published prose — titles, headings, and meta descriptions included. State the claim instead: "Search is changing", never "Is search changing?" (Genuine questions asked of a person still belong in Slack, email, and review comments.)
 - Paragraphs 2–3 sentences. A one-sentence paragraph is emphasis.
 - Bold the numbers and let them do the hype: "**569 million requests**". "Up to" is the honest hedge.
 - Tradeoffs get their own named section, never a buried clause. Name the costs to the reader.
