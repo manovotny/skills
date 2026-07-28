@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-24. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-07-27. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -128,6 +128,7 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 - Close with a soft one-sentence CTA or a distilled principle. One quotable line beats three paragraphs of recap.
 - Walkthroughs move on "Let's" — the reader is a co-worker at the keyboard.
 - How-to posts are symptom → fix. No scene-setting, no narrating the dead ends or the speculation — the reader came for the fix.
+- Dated notes are the exception to symptom → fix: a log entry earns one beat of personal narrative, because the experience is part of what's being recorded. One beat — the struggle gets told once, not restated three ways. Still open on the symptom, never on a windup ("One night, ...").
 - Republished posts stay true today: references to things that no longer exist get modernized ("Dan in the comments" → "A reader let me know").
 
 ### Release notes & changelogs
