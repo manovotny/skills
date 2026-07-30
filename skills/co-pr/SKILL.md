@@ -14,6 +14,24 @@ Create or update a GitHub pull request from the current branch. Handles staging,
 
 **Scope:** JS/TS repos only for now (detected via `package.json`). Symlinks are never staged or committed — they're for cross-repo verification only. `docs/superpowers/` files (specs, plans, designs) are never staged or committed — they're working artifacts for the current session only.
 
+## Voice
+
+Covers every piece of prose this skill writes: the PR title, the PR body, and commit message bodies.
+
+1. **Read the guide.** `~/.claude/skills/co-write/voice.md`, resolved from that path — this skill runs from any repo. Medium is **PR & review comments**: apply Core voice, then that overlay. Re-read the overlay's canonical excerpts before writing; they set rhythm in ways the rules can't.
+2. **Write.**
+3. **Self-check before publishing.** Re-read the draft against the guide and fix what fails. Never push prose that would flunk `/co-write check`. The misses that keep recurring in PR bodies:
+   - Restating what the link already shows — CI status, file counts, "lint and typecheck pass". The reader clicks through for that, and it reads as answering your own worry instead of theirs.
+   - Em dashes past the ration. Two in one paragraph means cut one.
+   - Filler and hedges from the never-list.
+   - Recap closers. Close on the next step, the ask, or nothing.
+
+Apply `voice.md` directly. Do not invoke `co-write` for this, same as `co-review` and `co-fix`.
+
+If `voice.md` is missing, or its Core voice section has no rules, write normally and say the prose isn't voiced. Don't improvise one from generic defaults.
+
+**Format wins.** PR templates, required sections, commit subject conventions, and repo idiom all outrank voice. Voice shapes the prose inside that structure, never the structure.
+
 ## Shared pre-commit flow
 
 Used by both create and update modes when there are uncommitted changes.
@@ -22,7 +40,7 @@ Used by both create and update modes when there are uncommitted changes.
 2. **Lint and format** — Read `package.json` scripts and dependencies. Run repo-defined commands with autofix (e.g., `pnpm lint --fix`, `pnpm format`). Never hardcode tool names.
 3. **Re-stage** — Formatters modify files on disk. Re-run `git add` on affected files so autofixes are included in the commit.
 4. **Tests/typechecks (judgment-based)** — Skip for small tweaks (CSS, docs, config). Run for meaningful changes (logic, refactors, new code). Use `pnpm test`, `pnpm typecheck`, `pnpm check`, etc.
-5. **Commit** — Match the repo's commit style from `git log --oneline -20`. Style-matching covers subject and body only. Always end the message with a `Co-Authored-By:` trailer crediting Claude, using verbatim the trailer string your own session guidance gives you — that string names the model actually running. If your session supplies no such trailer, fall back to:
+5. **Commit** — Match the repo's commit style from `git log --oneline -20`. Style-matching covers subject and body only. The subject follows the repo's convention; the body prose follows [Voice](#voice). Always end the message with a `Co-Authored-By:` trailer crediting Claude, using verbatim the trailer string your own session guidance gives you — that string names the model actually running. If your session supplies no such trailer, fall back to:
 
    ```
    Co-Authored-By: Claude <noreply@anthropic.com>
@@ -59,7 +77,7 @@ Used by both create and update modes when there are uncommitted changes.
 - **Not Planned** — anything intentionally skipped (only if relevant)
 - **References** — substantive links: related PRs/issues, Linear tickets, Slack threads, research articles, docs (only if relevant — skip tangential links)
 
-**Voice:** if `~/.claude/skills/co-write/voice.md` exists, read it and write the body prose in that voice (medium: PR & review comments). Template structure and required sections still win over voice.
+Write the body prose per [Voice](#voice), including the self-check before you create the PR.
 
 **Step 5 — Detect PR title style.** Run `gh pr list --state all --limit 10`. Match the dominant convention (conventional commits, ticket prefixes, sentence case, etc.).
 
@@ -100,7 +118,7 @@ Inline prose is fair game to rewrite. Structural elements stay.
 
 If no meaningful drift, output `PR description is still accurate. No changes made.` followed by the PR URL. Stop.
 
-**Step 5 — Rewrite narrative.** Refresh stale prose to match current direction, applying the voice guide the same way as create-mode Step 4 (if `~/.claude/skills/co-write/voice.md` exists). Preserve all user-added elements identified in Step 3 — reposition is fine, remove is not.
+**Step 5 — Rewrite narrative.** Refresh stale prose to match current direction, per [Voice](#voice), including the self-check before you edit the PR. Preserve all user-added elements identified in Step 3 — reposition is fine, remove is not.
 
 **Step 6 — Update the PR.** Use `--body-file -` with heredoc, never inline `--body`:
 
