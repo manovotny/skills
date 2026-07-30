@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-27. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-07-30. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -115,6 +115,7 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 - A local docs styleguide, when one exists, governs. Absent one, his style — consistent across the Vercel, Next.js, and Clerk docs — applies: sentence-case titles, active voice, no gerund headings, "you" never "we" (refer to the company by name), select not click, ensure not make sure, sign in not log in.
 - Never assume proficiency. Define jargon in parentheses on first use; spell out abbreviations once, then abbreviate (the AST pattern).
 - Lead with location, end with action: "In your project's root folder, open `.env`."
+- Cut "you can" before an instruction — give the action directly, in the imperative. "Get the user's OAuth access token from your backend…" not "You can get the user's OAuth access token…". "You can" only hedges what the imperative says outright. (Release notes are the exception: "You can now X" announces a new capability — a different move from instructing one.)
 - Code references exact: `<SignIn />` self-closing, backticks on files, commands, and identifiers.
 
 ### Blog & long-form
