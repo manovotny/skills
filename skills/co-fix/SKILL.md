@@ -100,6 +100,8 @@ Record each candidate as **stream plus id**, because the two streams are separat
 
 **Don't dismiss diagnostics as "pre-existing."** If diagnostics, LSP output, or linter warnings surface in changed files or their direct ripple — unused code, type errors, deprecated APIs, etc. — treat them as actionable alongside the accepted findings. Either fix them in the same pass or surface them for the user's call. Pre-existence alone is not grounds for dismissal.
 
+**Prose fixes carry the voice.** When an accepted finding lands in prose that lives in the repo — docs, READMEs, blog posts, articles, changelogs, release notes — write that prose per `~/.claude/skills/co-write/voice.md` if it exists, using the medium overlay that matches the content (Docs, Blog & long-form, Release notes & changelogs, ...; core alone when none fits). Apply the guide directly; don't invoke `/co-write`. Format still wins: a local styleguide or repo convention outranks the voice, per the guide itself. And voice never widens the fix — revoice only the prose the fix already touches; rewriting the surrounding document is the same smuggled refactor as above.
+
 **Step 8 — Pre-commit and push.** If the round produced fixes, run the shared pre-commit flow on them (lint/format always, tests/typechecks when meaningful), commit, and push. **No amending.** A round that accepted nothing has nothing to commit — skip straight to Step 8b rather than manufacturing a commit.
 
 **Step 8b — Answer bot reviewer comments.** Right after this round's push — or immediately, when the round produced no commits — close the loop on every bot comment triaged this round. One answer each, posted autonomously (co-fix already commits and pushes unattended):

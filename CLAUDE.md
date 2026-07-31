@@ -45,7 +45,9 @@ health, platform features, SEO, CLI/library API design) stay in `audit-prompt.md
 
 `skills/co-write/voice.md` is the user's voice guide. It's data, not documentation:
 co-pr, co-review, and co-fix read it (via `~/.claude/skills/co-write/voice.md`) when
-writing outward-facing prose — PR bodies, review and announce comments. Renaming or
+writing outward-facing prose — PR bodies, review and announce comments, and the
+prose-as-code co-fix rewrites during its fix loop (docs, blogs, changelogs, and the
+like). Renaming or
 moving it means updating those references. The guide is normally maintained through
 `/co-write learn`; manual edits follow the same rule as any skill edit (working copy,
 never `~/.claude`). Voice never overrides format: commit-message format, code-comment
