@@ -109,6 +109,7 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 - Let comments breathe: issue, evidence, and ask are separate paragraphs with a blank line between them — never one large block. (The gold-standard Slack excerpt below shows the shape.)
 - Titles and commit messages follow the repo's conventions — format always wins; only the prose inside carries the voice.
 - Announce comments: one bullet per fix, concise but comprehensive, no verification chest-thumping, no closing line unless he supplies one.
+- Declining or closing a contributor's PR: the decision, the one fact or link the reader needs, and a warmth beat. Rationale compresses to a single plain clause with a scope hedge ("We're not looking to add provider-specific guides at this time") — the policy paragraph behind the decision stays with the team, and unsolicited advice about where else to publish their work gets cut.
 
 ### Docs
 
@@ -196,6 +197,14 @@ Owning a miss to a user:
 Deep-thread logistics:
 
 > Booked 11:00 AM ET tomorrow.
+
+### PR & review comments
+
+Declining a contributor's PR — decision, pointer, one warmth beat:
+
+> @Ktryberceo the workflow itself is already documented in [Managing your own email delivery](https://clerk.com/docs/guides/development/troubleshooting/email-deliverability#managing-your-own-email-delivery), provider-agnostic on purpose, and the *Delivered by Clerk* toggle in the Dashboard links to it.
+>
+> We're not looking to add provider-specific guides for this at this time, so I'm going to close this. Appreciate you writing it against our docs patterns though — it shows.
 
 ### Blog & long-form
 
