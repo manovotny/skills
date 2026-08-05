@@ -82,4 +82,7 @@ Before presenting any draft or rewrite, run check mode's comparison internally a
    - Contradictions with existing rules → flag them and let the user pick which era of their voice wins; never silently overwrite.
    - Excerpt candidates → propose promoting a short, representative passage. Keep 2–4 per medium; when full, propose retiring the weakest.
 5. Show the proposed `voice.md` changes as a diff. Apply only on the user's approval.
-6. **Write to the real checkout, not the symlink.** `~/.claude/skills/co-write` is a symlink into a skills-repo checkout — resolve it (`readlink`) and edit the resolved path. Tell the user the change is an uncommitted edit in that checkout (name the branch it's on) so they can commit it like any other skill change.
+6. **Land the change as a PR, never as a loose edit.** Resolve `~/.claude/skills/co-write` (`readlink`) to find the skills-repo checkout; never write through the symlink.
+   - Inside a checkout or worktree of that repo, on a non-default branch where this change belongs? Edit its working copy of `skills/co-write/voice.md`, then invoke co-pr on the current branch.
+   - Anywhere else — including that repo on its default branch, or on a branch carrying unrelated work — leave the checkout as it sits: from it, fetch, `git worktree add` a fresh branch off the remote default branch — branch and worktree both named for the voice change — apply the approved diff in that worktree, and invoke co-pr from there to commit, push, and open the PR. Tell the user the worktree path so they can clean it up after merge (co-clean handles this).
+   - Either way, tell the user the voice change takes effect when the PR merges and the symlink-target checkout picks it up — not at approval time.

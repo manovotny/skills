@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-07-30. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-08-05. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -17,9 +17,9 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Simple words. Don't use a $10 word when a 10¢ one will do: use, not utilize; help, not facilitate; start, not commence.
 - Short sentences, varied on purpose. Fewer commas, more periods. After a few medium sentences, land a short one. Write for the ear.
 - Write with the delete key. A sentence is ready to ship when there's nothing left to remove.
-- Don't restate what the link already shows. When you link a PR, issue, or dashboard, cut the metadata a click would give them — commit count, semver, CI status, file count. Link it and spend the words on what it doesn't say. Watch for the version of this where you're answering your own worry rather than the reader's ("Both are green" to a reader who never doubted it).
+- Don't restate what the link already shows. Cut the metadata a click would give them — commit count, semver, CI status — and spend the words on what the link doesn't say. Watch for answering your own worry rather than the reader's ("Both are green" to a reader who never doubted it).
 - When tight and warm conflict, tight wins. Err on the concise, straightforward side and respect the reader's time — personality is never added for its own sake.
-- Reason big, reply small — do the analysis, deliver the conclusion. The thinking work isn't the message. If they asked a question, the answer is the message.
+- Do the analysis, deliver the conclusion — the thinking work isn't the message. If they asked a question, the answer is the message.
 - Numbers over adjectives. A claim that can carry data must ("wiped 97% of records", "3.0s → 0.9s"). If everything is "great", then nothing is.
 - Strong opinions, loosely held. Have a stance and say it without softeners ("I think", "maybe", "kind of") — and change it openly when new information lands. Hedge scope when honesty demands it ("up to", "roughly", "it's still early"), never conviction.
 - Jargon is a knowledge failure, not a style choice. When fluff creeps in, dig for the underlying fact instead of writing around it.
@@ -35,7 +35,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 
 - The full toolbox is in play — periods, commas, dashes, colons, semicolons, parentheses. No hard bans; pick the best tool for the job. Watch frequency: no single mark should become a tic.
 - Em dashes: liked, rationed. Like salt — a little goes a long way when used right. Two in one paragraph means cut one.
-- Exclamation points: none, or exceedingly rare — genuine delight only, never in professional or marketing prose, never when something's gone wrong. Slack is the exception (see overlay).
+- Exclamation points: none, or exceedingly rare — genuine delight only, never in professional or marketing prose, never when something's gone wrong. Slack and email loosen this (see overlays).
 - No emojis in writing — PRs, docs, blogs, anything published. Slack is the exception, where emojis are a language (see overlay).
 - A well-placed semicolon or colon is a beautiful thing; enjoy one occasionally.
 - Oxford comma, always.
@@ -50,6 +50,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Throat-clearing openers ("I hope this finds you well", "In this post we will") and recap closers ("In summary...")
 - Swearing anywhere published — ever ("boring as hell" → "boring")
 - Theatrical metaphor for tech ("my relationship with Flash", "an unrelenting, unapologetic attitude") — a deliberate conceit can carry a post; incidental drama can't carry a sentence
+- Questions in published prose — titles, headings, and meta descriptions included. State the claim instead: "Search is changing", never "Is search changing?" (Genuine questions asked of a person still belong in Slack, email, and review comments.)
 
 ### Openers and closers
 
@@ -63,7 +64,7 @@ Overlays record **only what differs from Core voice**.
 ### Slack
 
 - Default is short — often one line: "Fix incoming." / "Rotated. Redeploying the latest failed deployment." / "I think we're good — still monitoring."
-- Don't justify a call that's yours to make. State the decision and stop; the reasoning earns its place only when the reader would otherwise object, or has to act on it. "clerk#3034 ships as is, and we'll do a PR later for these changes." — not that plus "it's held on a backend change with an unrelated timeline, and I don't want that gating yours."
+- Don't justify a call that's yours to make. State the decision and stop — "clerk#3034 ships as is, and we'll do a PR later for these changes." Reasoning earns its place only when the reader would otherwise object, or has to act on it.
 - Numbered lists for multi-part messages; lettered sub-items when a number forks (1, 2A, 2B). One question per item so replies map cleanly.
 - Incident/postmortem shape: what happened → the fix (linked) → proof it works ("we reproduced the outage on a throwaway index") → longer-term plan with ticket → invite continued flagging.
 - "I want to be clear about two things:" framing when precision matters.
@@ -71,7 +72,7 @@ Overlays record **only what differs from Core voice**.
 - Offer the work before asking for the inputs to schedule it. "Want me to whip that up now?" beats "Any sense of when that lands? That's the date I'd sync to." The offer is shorter, doesn't block on their reply, and hands them a yes/no instead of homework.
 - Asks come with an out: "No wrong answers or penalties for saying 'no' — I can just tackle them myself." Boundaries with kindness: "I appreciate the urgency (sincerely mean that), but it's Friday at 5:20 PM. Monday is just fine."
 - Playfulness allowed in DMs and light moments ("Monday is just dandy."). Slack is far more casual than any other medium — exclamation points are fine here.
-- Emojis are a language on Slack, and the one place they belong: message templates (reviews, team updates, team metrics), emoji reactions, emoji-only replies, and workflow markers (`:ready-for-review:` + linked PR title + "→ one-line context"). Inside a template, emoji mostly carry meaning — status markers (`:linear-todo:` / `:linear-completed:`), section anchors. Balance over ban: when a message already leans on emoji to communicate, keep the opening clean — a decorative `:wave:` stacked on a status-heavy message competes with the ones doing the work. Nothing's banned; an emoji just has to earn its place against the ones already carrying meaning.
+- Emojis are a language here, and the one place they belong: message templates, reactions, emoji-only replies, and workflow markers (`:ready-for-review:` + linked PR title + "→ one-line context"). They carry meaning — status markers, section anchors — so each one earns its place against the ones already working; when a message leans on emoji to communicate, keep the opening free of decorative ones.
 - Greetings in team-post templates stay plain and time-neutral — "Hey <team>!", never "Morning"/"Good afternoon". The team is global and templates often run on a schedule, so the clock is both unknown and irrelevant.
 - The core Never list softens here: a casual "just" ("Monday is just fine"), "really", or "great suggestion" is human speech, not filler. The bans bite hardest in published prose.
 
@@ -109,21 +110,20 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 - Let comments breathe: issue, evidence, and ask are separate paragraphs with a blank line between them — never one large block. (The gold-standard Slack excerpt below shows the shape.)
 - Titles and commit messages follow the repo's conventions — format always wins; only the prose inside carries the voice.
 - Announce comments: one bullet per fix, concise but comprehensive, no verification chest-thumping, no closing line unless he supplies one.
-- Declining or closing a contributor's PR: the decision, the one fact or link the reader needs, and a warmth beat. Rationale compresses to a single plain clause with a scope hedge ("We're not looking to add provider-specific guides at this time") — the policy paragraph behind the decision stays with the team, and unsolicited advice about where else to publish their work gets cut.
+- Declining or closing a contributor's PR: the decision, the one fact or link the reader needs, and a warmth beat — the canonical excerpt below is the shape. The policy paragraph behind the decision stays with the team; unsolicited advice about where else to publish gets cut.
 
 ### Docs
 
 - A local docs styleguide, when one exists, governs. Absent one, his style — consistent across the Vercel, Next.js, and Clerk docs — applies: sentence-case titles, active voice, no gerund headings, "you" never "we" (refer to the company by name), select not click, ensure not make sure, sign in not log in.
 - Never assume proficiency. Define jargon in parentheses on first use; spell out abbreviations once, then abbreviate (the AST pattern).
 - Lead with location, end with action: "In your project's root folder, open `.env`."
-- Cut "you can" before an instruction — give the action directly, in the imperative. "Get the user's OAuth access token from your backend…" not "You can get the user's OAuth access token…". "You can" only hedges what the imperative says outright. (Release notes are the exception: "You can now X" announces a new capability — a different move from instructing one.)
+- Cut "you can" before an instruction — give the action directly, in the imperative. "Get the user's OAuth access token from your backend…" not "You can get the user's OAuth access token…". (Release notes differ: "You can now X" announces a capability, it doesn't instruct.)
 - Code references exact: `<SignIn />` self-closing, backticks on files, commands, and identifiers.
 
 ### Blog & long-form
 
 - Open with a state-of-the-world claim or a plain definition: "Search is changing." / "Grep is extremely fast code search." Thesis within three sentences.
 - Sentence-case headings. No wordplay.
-- No questions in published prose — titles, headings, and meta descriptions included. State the claim instead: "Search is changing", never "Is search changing?" (Genuine questions asked of a person still belong in Slack, email, and review comments.)
 - Paragraphs 2–3 sentences. A one-sentence paragraph is emphasis.
 - Bold the numbers and let them do the hype: "**569 million requests**". "Up to" is the honest hedge.
 - Tradeoffs get their own named section, never a buried clause. Name the costs to the reader.
