@@ -30,7 +30,7 @@ When committing local changes (uncommitted work, or fixes during the loop), foll
 2. Run lint/format with autofix (detected from `package.json`, never hardcoded)
 3. Re-stage files modified by autofixes
 4. Run tests/typechecks if the change is meaningful (judgment-based)
-5. Commit with a message matching the repo's style + co-author trailer
+5. Verify HEAD is still the intended branch (in a shared checkout a parallel session can move it — re-check `git branch --show-current` right before committing), then commit with a message matching the repo's style + co-author trailer
 6. Push (detect upstream, fall back to `origin`)
 
 **Hard rule: never amend after push.** All post-push fixes are new commits. Amending would require force-push, which destabilizes review threads and confuses anyone who pulled the branch.

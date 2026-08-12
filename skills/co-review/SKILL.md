@@ -26,6 +26,8 @@ Once the PR is known, get the session's **current working directory** onto that 
    - **Dirty tree** → stop and ask first. Git will happily carry uncommitted changes onto the PR branch, dragging unrelated work into the review; confirm with the user rather than switching under them.
    - **Branch already checked out in another worktree/clone sharing this `.git`** → `gh pr checkout` fails and git names where the branch lives. Surface that and stop; do **not** relocate the user's other checkout to free the branch.
 
+**Orientation is point-in-time, not durable.** If this directory is a repo's primary checkout that other agent sessions or scripts also operate in (session worktrees hanging off it in `git worktree list` are the tell), a parallel session can move HEAD between your orientation and a later commit. Re-run the step-1 identity check immediately before any `git commit` or `git push` — direct fixes (Option 3) and re-review fixes included; on a mismatch, stop and re-orient rather than committing onto whatever branch was left checked out.
+
 Review-only (posting comments) runs off `gh pr diff` regardless of branch, but orienting up front is what makes the review step's premise that *the changes already exist locally* actually hold — the Files panel and any local file you open around the diff reflect the PR, not main — and lets direct fixes (Option 3) land without a mid-flow scramble.
 
 ## Review prompt
