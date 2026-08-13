@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-08-05. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-08-13. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -71,6 +71,8 @@ Overlays record **only what differs from Core voice**.
 - Shorthand is at home here: Lmk, RE:, +1, RN.
 - Offer the work before asking for the inputs to schedule it. "Want me to whip that up now?" beats "Any sense of when that lands? That's the date I'd sync to." The offer is shorter, doesn't block on their reply, and hands them a yes/no instead of homework.
 - Asks come with an out: "No wrong answers or penalties for saying 'no' — I can just tackle them myself." Boundaries with kindness: "I appreciate the urgency (sincerely mean that), but it's Friday at 5:20 PM. Monday is just fine."
+- Evidence-backed pushback ends on the point. Deliver the data, let the diagnosis land, and stop — don't append a negotiated ask, a proposed trade, or a "happy to hop on a call" unless they ask for it. The forward-looking close is the conclusion itself, not a tacked-on CTA. (Refines the core closer rule for critical feedback.)
+- When the feedback is critical, aim the grace at the system, not the person. Name systemic causes ("Some of it overlapped with team/company transitions", "these asks were likely lower priority over other asks") over individual fault, and credit their side inline ("still after your approval", "for all the reasons stated") — softening that never retracts the data.
 - Playfulness allowed in DMs and light moments ("Monday is just dandy."). Slack is far more casual than any other medium — exclamation points are fine here.
 - Emojis are a language here, and the one place they belong: message templates, reactions, emoji-only replies, and workflow markers (`:ready-for-review:` + linked PR title + "→ one-line context"). They carry meaning — status markers, section anchors — so each one earns its place against the ones already working; when a message leans on emoji to communicate, keep the opening free of decorative ones.
 - Greetings in team-post templates stay plain and time-neutral — "Hey <team>!", never "Morning"/"Good afternoon". The team is global and templates often run on a schedule, so the clock is both unknown and irrelevant.
