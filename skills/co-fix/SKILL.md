@@ -13,7 +13,7 @@ Run an agentic peer review loop on a pull request Claude authored. Codex reviews
 
 ## Preconditions
 
-Run `gh pr view --json number,state,url` on the current branch.
+Run `gh pr view --json number,state,url` on the current branch. When the user passed a PR URL or number, or the PR head lives on a fork (see co-pr's Fork mode), resolve it explicitly instead — `gh pr view {url-or-number} --repo {upstream} --json number,state,url` — because branch-based resolution only finds PRs whose head matches the local branch name.
 
 - **No PR** → error: "No PR exists for this branch. Run `/co-pr draft` first."
 - **`OPEN`** → continue.
@@ -31,7 +31,9 @@ When committing local changes (uncommitted work, or fixes during the loop), foll
 3. Re-stage files modified by autofixes
 4. Run tests/typechecks if the change is meaningful (judgment-based)
 5. Verify HEAD is still the intended branch (in a shared checkout a parallel session can move it — re-check `git branch --show-current` right before committing), then commit with a message matching the repo's style + co-author trailer
-6. Push (detect upstream, fall back to `origin`)
+6. Push (detect upstream, fall back to `origin`; in fork mode, `git push fork HEAD:refs/heads/{branch}` per co-pr's Fork mode)
+
+**Fork PRs live in the base repo.** Every `gh` call in the loop — `gh pr diff`, `gh pr checks`, `gh pr edit`, and the `repos/{owner}/{repo}/...` comment endpoints — takes the upstream (base) repo, never the fork: that's where the PR, its threads, and its checks exist. Only pushes go to the fork.
 
 **Hard rule: never amend after push.** All post-push fixes are new commits. Amending would require force-push, which destabilizes review threads and confuses anyone who pulled the branch.
 
