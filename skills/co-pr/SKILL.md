@@ -58,11 +58,33 @@ Used by both create and update modes when there are uncommitted changes.
    fi
    ```
 
-   If push fails, surface the actual error and stop.
+   If push fails, surface the actual error and stop. In fork mode, push to the `fork` remote with an explicit refspec instead (see [Fork mode](#fork-mode-external-contributor)).
+
+## Fork mode (external contributor)
+
+Some PRs target a repo the user can't push to — they're contributing from outside. Detect this before the first push, not from a failed one: when the target repo isn't obviously the user's own, check
+
+```bash
+gh repo view {owner}/{repo} --json viewerPermission --jq .viewerPermission
+```
+
+on the repo `origin` points to. `READ` means fork mode. The flow stays the same except for four things:
+
+1. **Fork without touching remotes.** `gh repo fork {upstream} --clone=false`, then `git remote add fork git@github.com:{user}/{repo}.git`. Never `gh repo fork --remote` — it renames `origin` to `upstream` and repoints `origin` at the fork, and remotes are shared across every worktree and session using the clone, so that rewiring leaks beyond this branch. If the fork already exists, `gh repo fork` says so harmlessly; reuse it.
+2. **Pick the branch name the upstream would.** The local branch may carry a session-generated name that means nothing upstream. Read head-branch conventions from `gh pr list --repo {upstream} --state all --limit 10 --json headRefName,title` and push under a matching name — the refspec decouples local from remote naming:
+
+   ```bash
+   git push fork HEAD:refs/heads/{branch}
+   ```
+
+3. **Name the repo on every `gh pr` call.** Branch-based resolution can't find a PR whose head lives on the fork under a different name. Create with `gh pr create --repo {upstream} --base {default-branch} --head {user}:{branch}`; view, edit, and list with `--repo {upstream}` plus the PR number or URL. This includes Step 5's title-style detection — `gh pr list` without `--repo` may read the wrong repo's conventions.
+4. **Expect quiet CI.** Workflow runs on a first-time contributor's PR wait for maintainer approval, so "no checks reported" is normal on a fresh fork PR — mention it, don't chase it.
+
+Fork mode also changes the audience: the PR body reads as a proposal to a maintainer who didn't ask for the change, not a teammate expecting it. Lead the Summary with the problem the change solves for the project's users, and keep repo conventions (branch names, commit style, localization parity, changelog entries) tight — they're the first thing a maintainer checks on an outside contribution.
 
 ## Create mode (`/co-pr` and `/co-pr draft`)
 
-**Step 1 — Precondition.** Run `gh pr view --json number,state` on the current branch. **Run this alone — do not parallelize with other commands**, because `gh` exits non-zero when no PR exists (the expected happy path), and parallel tool calls cancel siblings on non-zero exit.
+**Step 1 — Precondition.** Run `gh pr view --json number,state` on the current branch. **Run this alone — do not parallelize with other commands**, because `gh` exits non-zero when no PR exists (the expected happy path), and parallel tool calls cancel siblings on non-zero exit. In fork mode, branch-based resolution misses fork-hosted heads — check with `gh pr list --repo {upstream} --head {user}:{branch} --json number,state` instead.
 - PR exists → error: "A PR already exists for this branch. Use `/co-pr update` to update it."
 - `gh` fails (auth/remote/network) → surface the actual error, don't assume "no PR."
 - No PR → continue.
