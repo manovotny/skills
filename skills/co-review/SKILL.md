@@ -158,7 +158,7 @@ ANNOUNCE_EOF
 - First person, as if the user is speaking — not Claude.
 - Straightforward but not cold.
 - Don't be overly apologetic.
-- If `~/.claude/skills/co-write/voice.md` exists, read it and apply the voice (medium: PR & review comments) on top of these rules.
+- Run it through the voice guide before posting, same as every comment this skill sends — read `voice.md`, apply the **PR & review comments** medium, and self-check the draft (see **GitHub comment tone**). Don't hand-apply from memory.
 
 ## Bot reviewer thread replies
 
@@ -289,7 +289,12 @@ Before building the review payload, group findings by anchor:
 
 ## GitHub comment tone
 
-When posting comments, write them as if the user is speaking — first person, not Claude:
+Every comment this skill posts speaks as the user — review comments, thread replies, direct-fix announces, and bot-thread answers alike. So each one goes through the voice guide before it goes to GitHub, no exceptions:
+
+1. **Read the guide, don't recall it.** `~/.claude/skills/co-write/voice.md`, resolved from that path — this skill runs from any repo. Medium is **PR & review comments**: apply Core voice, then that overlay, and re-read the overlay's canonical excerpts before writing; they set rhythm the rules can't. Reading it turns ago and drafting from memory is not applying it — that's exactly when a slang idiom, a punchy metaphor, or a Claude-ism slips in.
+2. **Self-check right before posting.** Re-read the draft against the guide and fix what fails. Never post prose that would flunk `/co-write check`. When a phrase reaches for color the user wouldn't use, cut it and state the point plainly.
+
+Then, writing as if the user is speaking — first person, not Claude:
 
 - **Lead with the observation.** No scene-setting ("On a reference page that's literally defining `someFunction`…"), no softening openers ("Small thing —", "Nit -", "Separately —", "Let's match:"), no restating the PR's goal back to the author. If the suggestion block already shows the fix, the body is the reason + the question — nothing else.
 - **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?".
