@@ -41,7 +41,7 @@ Announce: **"Starting parallel review of PR #{number}."**
 **Step 1 — Pre-review.** Before touching the diff, gather context. The **authoritative checklist is review-prompt.md's "Pre-review" section** (Claude and Codex share it) — follow it there rather than relying on a separate list here. In brief:
 
 - `gh pr view {number}` for title, description, and linked references; follow linked PRs/repos
-- Project context files — CLAUDE.md, AGENTS.md, CONTRIBUTING*, STYLEGUIDE* (following one-hop `@`/pointer imports)
+- Project context files — CLAUDE.md, AGENTS.md, CONTRIBUTING*, STYLEGUIDE*, GUIDELINES* (following one-hop `@`/pointer imports), plus any guidance co-located with or in an ancestor directory of the changed files (the nearest one governs that file — repo-root scans miss a `GUIDELINES.md` sitting next to the content it governs)
 - Authoritative sources — enumerate what this PR's claims depend on (upstream/sibling repos, dependency package sources, vendored code, API/spec definitions, generated artifacts; reachable via symlink, local clone, or installed package), note which are reachable versus missing, and ask the user for missing ones that block real verification
 - Existing PR threads — bot reviewer comments (CodeRabbit, Cursor's Bugbot, the ChatGPT/Codex connector, Macroscope, …) enter the review as candidate findings to judge, never to blindly accept
 - CI status (`gh pr checks {number} --json name,state,bucket,link,description,workflow`) and base staleness (`gh pr view {number} --json mergeStateStatus` → `BEHIND`) — failing checks and staleness are findings, not just context
