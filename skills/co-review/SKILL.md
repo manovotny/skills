@@ -54,6 +54,8 @@ cat <<'CO_REVIEW_EOF' | codex exec --dangerously-bypass-approvals-and-sandbox -
 CO_REVIEW_EOF
 ```
 
+The bypass flag is deliberate: the review needs network (`gh`, `git fetch`) and reads across sibling repos, and Codex's `--sandbox read-only` blocks the network (verified — `gh` fails to reach the API under it), while `--sandbox workspace-write` still permits edits inside the repo under review. So no sandbox mode gives read-only-filesystem plus network. The guard against a stray Codex edit is instead the review prompt (which tells it to report findings and not touch files) plus Step 3 synthesis re-reading the diff before anything is posted. Don't swap to `read-only` to stop edits — it silently breaks the review.
+
 **Capture the session ID** from Codex's output (`session id: <uuid>`) — needed if the user runs a re-review later.
 
 While Codex runs, Claude reviews the diff simultaneously using the same prompt and `gh pr diff {number}`. True parallel — do not wait for Codex before starting Claude's review.

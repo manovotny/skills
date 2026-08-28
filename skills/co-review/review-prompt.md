@@ -14,7 +14,7 @@
 
 ## Review
 
-The changes already exist locally. Review the diff using `gh pr diff {PR_NUMBER}`, focusing on:
+The changes already exist locally. This is a read-only review: inspect the diff and report findings — do not create, edit, move, or delete any files. Review the diff using `gh pr diff {PR_NUMBER}`, focusing on:
 
 ### What to review
 
