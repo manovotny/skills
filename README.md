@@ -16,7 +16,6 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 | [`/co-pr`](skills/co-pr/SKILL.md) | Create or update a GitHub pull request. Three modes: `/co-pr` (ready), `/co-pr draft`, `/co-pr update`. Handles staging, lint/format, commit, push, and PR description generation with content preservation. |
 | [`/co-review`](skills/co-review/SKILL.md) | Parallel PR review by Claude and Codex. Both review the diff simultaneously, Claude synthesizes findings into one issue list, then posts pending GitHub comments or makes direct fixes. Handles re-reviews when the author pushes changes. |
 | [`/co-verify`](skills/co-verify/SKILL.md) | Generate a project-local `verify-<app>` skill that launches the real app, drives it like a user, and captures evidence — grounded in the repo's own commands, selectors, and auth path, with a maintained feature map. `/co-verify update` keeps it honest as the app changes. Solo utility; the generated skill is proven by executing it once before handoff. |
-| [`/co-watch`](skills/co-watch/SKILL.md) | Watch a PR after review. A local self-rescheduling loop that notifies on new comments, re-runs `/co-review` when the author pushes commits, and cleans up the worktree when the PR merges or closes. Default 20m interval, overridable (`/co-watch 30m`). Superseded for most uses by the Claude desktop app's built-in PR watcher, which survives session lifecycle; co-watch remains for CLI/SSH sessions. |
 | [`/co-write`](skills/co-write/SKILL.md) | Write, rewrite, or check prose in a personal voice — Slack messages, emails, docs, blogs, announcements. The skill is the logic; [`voice.md`](skills/co-write/voice.md) is the data, trained from your own writing samples via `/co-write learn`. Ships with the author's voice guide — replace it or retrain to make it yours. Sibling skills (co-pr, co-review, co-fix) apply the same guide to outward-facing prose. |
 
 ## Typical workflow
@@ -30,7 +29,6 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 6. /co-merge        → if the branch fell behind, merge the default branch in
 7. (mark ready)     → PR ready for coworker review
 8. /co-review       → use this to review someone else's PR
-9. /co-watch        → after a review, keep watching for comments, commits, and merge
 ```
 
 Each skill stands on its own. Use them in any order or combination that fits the task.
@@ -43,7 +41,7 @@ Each skill stands on its own. Use them in any order or combination that fits the
 
 - [Claude Code](https://claude.com/claude-code)
 - [Codex CLI](https://github.com/openai/codex), authenticated, with model and reasoning configured in `~/.codex/config.toml`
-- [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, `co-fix`, `co-merge`, `co-watch`, and `co-clean`
+- [GitHub CLI](https://cli.github.com/) (`gh`) for `co-pr`, `co-review`, `co-fix`, `co-merge`, and `co-clean`
 
 Use the [`skills` CLI](https://skills.sh) to install. The skills target Claude Code specifically (`--agent claude-code`).
 
@@ -65,7 +63,7 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
-The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-clean`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`, `/co-verify`, `/co-watch`, `/co-write`).
+The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-clean`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`, `/co-verify`, `/co-write`).
 
 ## Development
 
