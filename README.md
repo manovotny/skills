@@ -15,6 +15,8 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 | [`/co-plan`](skills/co-plan/SKILL.md) | Iterative peer review of an implementation plan. Claude drafts, Codex reviews, Claude revises, repeat until Codex is satisfied — then a final pass strips overengineered bloat. |
 | [`/co-pr`](skills/co-pr/SKILL.md) | Create or update a GitHub pull request. Three modes: `/co-pr` (ready), `/co-pr draft`, `/co-pr update`. Handles staging, lint/format, commit, push, and PR description generation with content preservation. |
 | [`/co-review`](skills/co-review/SKILL.md) | Parallel PR review by Claude and Codex. Both review the diff simultaneously, Claude synthesizes findings into one issue list, then posts pending GitHub comments or makes direct fixes. Handles re-reviews when the author pushes changes. |
+| [`/co-verify`](skills/co-verify/SKILL.md) | Generate a project-local `verify-<app>` skill that launches the real app, drives it like a user, and captures evidence — grounded in the repo's own commands, selectors, and auth path, with a maintained feature map. `/co-verify update` keeps it honest as the app changes. Solo utility; the generated skill is proven by executing it once before handoff. |
+| [`/co-write`](skills/co-write/SKILL.md) | Write, rewrite, or check prose in a personal voice — Slack messages, emails, docs, blogs, announcements. The skill is the logic; [`voice.md`](skills/co-write/voice.md) is the data, trained from your own writing samples via `/co-write learn`. Ships with the author's voice guide — replace it or retrain to make it yours. Sibling skills (co-pr, co-review, co-fix) apply the same guide to outward-facing prose. |
 
 ## Typical workflow
 
@@ -31,7 +33,7 @@ The `co-` skills automate collaborative development workflows. Most pair Claude 
 
 Each skill stands on its own. Use them in any order or combination that fits the task.
 
-`/co-audit` sits outside this PR-centric flow — run it any time to audit the whole project (or a path) for improvements: `/co-audit`, `/co-audit performance`, or `/co-audit src/api`.
+`/co-audit` and `/co-verify` sit outside this PR-centric flow — run `/co-audit` any time to audit the whole project (or a path) for improvements (`/co-audit`, `/co-audit performance`, `/co-audit src/api`), and `/co-verify` once per repo to generate its verification skill (then `/co-verify update` as the app changes).
 
 ## Installation
 
@@ -61,7 +63,7 @@ npx skills add manovotny/skills -g --agent claude-code --skill co-plan -y
 npx skills add manovotny/skills -g --agent claude-code --skill co-plan co-review -y
 ```
 
-The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-clean`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`).
+The skills become available in your next Claude Code session as slash commands (`/co-audit`, `/co-clean`, `/co-fix`, `/co-merge`, `/co-plan`, `/co-pr`, `/co-review`, `/co-verify`, `/co-write`).
 
 ## Development
 
