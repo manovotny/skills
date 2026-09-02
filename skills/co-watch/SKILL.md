@@ -1,9 +1,11 @@
 ---
 name: co-watch
-description: Use when watching a pull request after review — notify on new comments, re-review new commits, and clean up the worktree on merge/close
+description: Use when watching a pull request after review in a CLI/SSH session — notify on new comments, re-review new commits, and clean up the worktree on merge/close. In the Claude desktop app, prefer its built-in PR watcher instead
 ---
 
 # co-watch
+
+> **Superseded for most uses.** The Claude desktop app's built-in PR watcher (per-PR CI monitoring with auto-fix, auto-merge, and auto-archive options) survives app and session lifecycle; co-watch's loop dies with the session. Reach for co-watch only where the built-in watcher isn't available — CLI or SSH sessions — or when the re-review needs this session's co-review context.
 
 Watch a pull request after `/co-review` and keep the user informed without babysitting it. co-watch runs locally as a self-rescheduling heartbeat. On each tick it notifies on new comments/replies from others, re-runs `/co-review` when the author pushes commits, and cleans up the local worktree when the PR merges or closes.
 
