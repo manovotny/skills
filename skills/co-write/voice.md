@@ -1,6 +1,6 @@
 # Voice guide
 
-> Last distilled: 2026-08-13. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below.
+> Last distilled: 2026-08-13. Sources: what he learned refining the Vercel voice-and-tone guidelines, the Clerk docs styleguide, his published Vercel and Next.js blogs, real Slack messages, his sent email (threads with users and vendors), his line-by-line edits to drafts written for him, and his stated overrides — overrides win over everything below. The AI tells section (2026-09-01) is adapted from pstack's unslop skill (https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md) — detection patterns only; its voice rules (like the em-dash ban) were deliberately not imported.
 >
 > Inspirations, not sources: the style took shape at Vercel, writing alongside Lee Robinson and Guillermo Rauch, with doctrine from Gary Provost (sentence-length variety) and William Zinsser (clear thinking becomes clear writing). They inspired the voice; it isn't based on them, and it never imitates them.
 
@@ -51,6 +51,19 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Swearing anywhere published — ever ("boring as hell" → "boring")
 - Theatrical metaphor for tech ("my relationship with Flash", "an unrelenting, unapologetic attitude") — a deliberate conceit can carry a post; incidental drama can't carry a sentence
 - Questions in published prose — titles, headings, and meta descriptions included. State the claim instead: "Search is changing", never "Is search changing?" (Genuine questions asked of a person still belong in Slack, email, and review comments.)
+
+### AI tells
+
+Patterns that mark prose as machine-written — drafts here are Claude-authored, so these are self-check catches, not habits of his. The master test: if a sentence can't be restated as a concrete fact, instruction, or number, cut it. And if it could appear unchanged in someone else's post or docs, it says nothing about this one — cut it too.
+
+- Fancy ways to say "is": "serves as", "stands as", "boasts", "features". Say is or has.
+- "Not just X, but Y" — state the point directly.
+- Superficial "-ing" trailers ("...ensuring reliability", "...highlighting the importance of") — delete, or expand into a real claim.
+- Vague attributions ("experts believe", "industry reports suggest") — name the source or delete.
+- False ranges ("from X to Y" where X and Y aren't points on a real scale) — list the things directly.
+- Synonym cycling — one name per thing, everywhere. Prose that calls one thing "the gate", "the check", and "the budget" teaches three things.
+- Inline-header bullets whose bold label restates the line ("**Performance:** performance improved...") — convert to prose. A bold lead-in followed by genuinely new detail is fine.
+- Abstract metaphor nouns — substrate, primitive (as noun), wedge, vector, north star, flywheel, "surface" (as in "API surface"). Use the concrete word.
 
 ### Openers and closers
 
@@ -205,7 +218,7 @@ Deep-thread logistics:
 
 Declining a contributor's PR — decision, pointer, one warmth beat:
 
-> @Ktryberceo the workflow itself is already documented in [Managing your own email delivery](https://clerk.com/docs/guides/development/troubleshooting/email-deliverability#managing-your-own-email-delivery), provider-agnostic on purpose, and the *Delivered by Clerk* toggle in the Dashboard links to it.
+> @Ktryberceo the workflow itself is already documented in [Managing your own email delivery](https://clerk.com/docs/guides/development/troubleshooting/email-deliverability#managing-your-own-email-delivery), provider-agnostic on purpose, and the _Delivered by Clerk_ toggle in the Dashboard links to it.
 >
 > We're not looking to add provider-specific guides for this at this time, so I'm going to close this. Appreciate you writing it against our docs patterns though — it shows.
 
