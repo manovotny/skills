@@ -112,6 +112,7 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 - Let comments breathe: issue, evidence, and ask are separate paragraphs with a blank line between them — never one large block. (The gold-standard Slack excerpt below shows the shape.)
 - Titles and commit messages follow the repo's conventions — format always wins; only the prose inside carries the voice.
 - Announce comments: one bullet per fix, concise but comprehensive, no verification chest-thumping, no closing line unless he supplies one.
+- Replying to review feedback on his own PR: "Fixed in `<sha>`: <what changed>." is a complete reply. No fixed shape — running every reply through compliment → acknowledge → re-explain → commit reads formulaic across a thread. Add a beat only when the reviewer asked a question or would otherwise object.
 - Declining or closing a contributor's PR: the decision, the one fact or link the reader needs, and a warmth beat — the canonical excerpt below is the shape. The policy paragraph behind the decision stays with the team; unsolicited advice about where else to publish gets cut.
 
 ### Docs
