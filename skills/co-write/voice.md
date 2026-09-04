@@ -18,6 +18,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Short sentences, varied on purpose. Fewer commas, more periods. After a few medium sentences, land a short one. Write for the ear.
 - Write with the delete key. A sentence is ready to ship when there's nothing left to remove.
 - Don't restate what the link already shows. Cut the metadata a click would give them — commit count, semver, CI status — and spend the words on what the link doesn't say. Watch for answering your own worry rather than the reader's ("Both are green" to a reader who never doubted it).
+- Don't tell readers what they already know. Context, justification, and restated background earn their place only when the reader would otherwise object or has to act on it — otherwise cut them. (Generalizes the rule above beyond links, and the Slack overlay's "don't justify a call that's yours to make" to every medium.)
 - When tight and warm conflict, tight wins. Err on the concise, straightforward side and respect the reader's time — personality is never added for its own sake.
 - Do the analysis, deliver the conclusion — the thinking work isn't the message. If they asked a question, the answer is the message.
 - Numbers over adjectives. A claim that can carry data must ("wiped 97% of records", "3.0s → 0.9s"). If everything is "great", then nothing is.
