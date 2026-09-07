@@ -39,7 +39,7 @@ The changes already exist locally. This is a read-only review: inspect the diff 
 
 - Flag uncertainty about **intent or scope** explicitly rather than asking the author to explain it.
 - Uncertainty about an **objective fact** (type name, signature, endpoint, parameter, return value, behavior) is not a finding yet — resolve it against an authoritative source first. If the source that would settle it isn't reachable in the workspace, ask the user to make it available before downgrading the item to "needs author input."
-- Don't be overly pedantic. Nitpicks are fine, but only if they are relevant issues within reason.
+- Raise nitpicks only when they're relevant issues within reason.
 - Improvement-oriented findings (caching, query efficiency, error handling, framework features, duplication, accessibility) are usually `suggestion` or `nit`, not `bug` — raise them when they're clearly worth the change and let the author decide. Apply the same overkill filter: skip churn that isn't worth it.
 
 ## Output

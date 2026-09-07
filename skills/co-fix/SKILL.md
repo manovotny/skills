@@ -80,7 +80,7 @@ The Dismissed list is still worth appending explicitly — it signals intent cle
 gh pr checks --json name,state,bucket,link,description
 ```
 
-Treat CI failures as first-class findings alongside Codex's code review — a broken build matters as much as a code comment. Investigate failures with `gh run view <run-id> --log-failed` and fix them in the same pass as code review findings.
+Treat CI failures as first-class findings alongside Codex's code review — a broken build matters as much as a code comment. That JSON carries no run id, so investigate a failure through its `link` (a GitHub Actions link contains the run id, which `gh run view <run-id> --log-failed` then accepts) and fix it in the same pass as code review findings.
 
 Then pull both PR comment streams (`gh api --paginate repos/{owner}/{repo}/pulls/{pr}/comments` and `gh api --paginate repos/{owner}/{repo}/issues/{pr}/comments`) and collect **bot reviewer comments** — authors with `user.type == "Bot"` raising code concerns (CodeRabbit, Cursor's Bugbot, the ChatGPT/Codex connector, Macroscope, …); skip non-review bot noise (deploy previews, coverage summaries, changelog bots) and anything that already has a human reply. Re-fetch every round — bots often comment while the loop runs. **Track candidates by revision, keyed on `(stream, id, updated_at)`**, not by id alone: CodeRabbit revises its summary in place, so a changed `updated_at` on an id you already answered makes it a candidate again. Bot findings are candidates for Step 6's filter, not obligations.
 
@@ -124,15 +124,7 @@ A top-level bot comment has no reply thread, and its issue comment id sent to th
 
 **Re-fetch each thread immediately before posting.** Codex runs and fixes take time, so a human may have replied since Step 4 — skip any root that has since gained one. Answer each `(stream, id, updated_at)` revision at most once: an unchanged revision you already answered stays untouched, while a revised one is answered again, covering only what changed since the revision you answered before. Write replies first person as the user; if `~/.claude/skills/co-write/voice.md` exists, apply it (medium: PR & review comments).
 
-**Step 9 — Check termination.** Look for satisfaction signals in Codex's response:
-- "this is ready"
-- "this is solid"
-- "no remaining gaps"
-- "complete enough to execute"
-- "no remaining findings"
-- "don't see any substantive gaps"
-
-If satisfied (even with trailing nits), exit the loop. Trailing nits fold into Step 10 below.
+**Step 9 — Check termination.** Codex is satisfied when its response says the PR is ready or has no substantive findings left — judge the response as a whole, not by any particular phrase. If satisfied (even with trailing nits), exit the loop. Trailing nits fold into Step 10 below.
 
 **Hard cap: 4 rounds.** If round 4 has no satisfaction signal, stop and ask the user for guidance.
 
