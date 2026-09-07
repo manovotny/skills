@@ -111,6 +111,8 @@ gh pr create --title "..." --body-file - <<'CO_PR_BODY'
 CO_PR_BODY
 ```
 
+When the change is visual — UI, rendered output, before/after — attach the proof with `--attach ./after.png` (repeatable; alt text via `--attach './after.png#Alt text'`; needs gh ≥ 2.99.0). Local paths referenced in the body are rewritten in place; unreferenced attachments append at the end. PNG, JPEG, GIF, WebP, SVG, MP4, MOV, and WebM — 10 MB for images, 100 MB for video on paid plans.
+
 **Step 7 — Output.** Print the PR URL. Nothing else.
 
 ## Update mode (`/co-pr update`)
@@ -149,5 +151,7 @@ gh pr edit {number} --title "..." --body-file - <<'CO_PR_BODY'
 [UPDATED BODY]
 CO_PR_BODY
 ```
+
+`gh pr edit` and `gh pr comment` take the same `--attach` flag as create — new proof media can land from the CLI, not only survive from Step 3.
 
 **Step 7 — Output.** Print the PR URL.
