@@ -78,15 +78,7 @@ Repeat Steps 2-3 until terminated.
 
 ## Termination rules
 
-After each Codex response, check for a **satisfaction signal** — phrases like:
-- "this is ready"
-- "this is solid"
-- "no remaining gaps"
-- "complete enough to execute"
-- "no remaining findings"
-- "don't see any substantive gaps"
-
-If Codex signals satisfaction — even with trailing nits — **exit the loop**. Fold trailing nits into the final self-review instead of looping again.
+After each Codex response, decide whether it signals satisfaction: the plan is ready, or has no substantive gaps left. Judge the response as a whole, not by any particular phrase. If it does — even with trailing nits — **exit the loop**. Fold trailing nits into the final self-review instead of looping again.
 
 **Hard cap: 4 rounds.** If round 4 has no satisfaction signal, stop and ask the user for guidance. Do not continue indefinitely.
 

@@ -48,7 +48,7 @@ CO_AUDIT_EOF
 
 While Codex runs, Claude audits simultaneously using the same prompt. True parallel — do not wait for Codex before starting Claude's audit.
 
-**Do not poll for Codex's status with sleep/cat loops.** Background tasks notify you on completion automatically — the Bash tool rejects leading `sleep` commands. Launch Codex, do Claude's audit in the meantime, and read the background task's output only once you receive the completion notification. If you must watch a condition, use the `Monitor` tool with an `until` loop, never chained sleeps.
+The background task notifies you when Codex finishes; do Claude's audit in the meantime and read Codex's output after that notification. If you need to watch a condition before then, use the `Monitor` tool with an `until` loop.
 
 If Codex fails (non-zero exit, empty response, timeout, not installed), continue with Claude's audit alone and tell the user Codex errored. Codex is additive — Claude's audit stands on its own.
 

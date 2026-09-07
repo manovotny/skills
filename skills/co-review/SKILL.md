@@ -60,7 +60,7 @@ The bypass flag is deliberate: the review needs network (`gh`, `git fetch`) and 
 
 While Codex runs, Claude reviews the diff simultaneously using the same prompt and `gh pr diff {number}`. True parallel — do not wait for Codex before starting Claude's review.
 
-**Do not poll for Codex's status with sleep/cat loops.** Background tasks notify you on completion automatically — the Bash tool will reject leading `sleep` commands (e.g., `sleep 30 && cat .../output | tail -80`). Launch Codex, do Claude's review in the meantime, and only read the background task's output once you receive the completion notification. If you genuinely need to watch a condition, use the `Monitor` tool with an `until` loop, never chained sleeps.
+The background task notifies you when Codex finishes; do Claude's review in the meantime and read Codex's output after that notification. If you need to watch a condition before then, use the `Monitor` tool with an `until` loop.
 
 If Codex fails (non-zero exit, empty response, timeout), continue with Claude's review alone and tell the user Codex errored. Codex is additive — Claude's review stands on its own.
 
@@ -162,7 +162,6 @@ ANNOUNCE_EOF
 
 - First person, as if the user is speaking — not Claude.
 - Straightforward but not cold.
-- Don't be overly apologetic.
 - Run it through the voice guide before posting, same as every comment this skill sends — read `voice.md`, apply the **PR & review comments** medium, and self-check the draft (see **GitHub comment tone**). Don't hand-apply from memory.
 
 ## Bot reviewer thread replies
@@ -303,7 +302,7 @@ Then, writing as if the user is speaking — first person, not Claude:
 
 - **Lead with the observation.** No scene-setting ("On a reference page that's literally defining `someFunction`…"), no softening openers ("Small thing —", "Nit -", "Separately —", "Let's match:"), no restating the PR's goal back to the author. If the suggestion block already shows the fix, the body is the reason + the question — nothing else.
 - **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?".
-- **Straightforward but not cold.** Don't be overly apologetic. Assume the reviewer doesn't have the same context as the author.
+- **Straightforward but not cold.** Assume the reviewer doesn't have the same context as the author.
 - **Inquisitive, not demanding.** Raise the concern, offer the alternative, let the author decide.
 - When a fix is straightforward, use a GitHub suggestion block (see above) so the author can apply it directly.
 - When it's a design question, just raise the concern.
