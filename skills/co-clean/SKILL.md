@@ -94,7 +94,8 @@ Eligible for removal only when **all** hold: `mergedAt` is set, `pr_oid` == the 
 
 - **OID differs** → the local branch diverged from what merged (reused name, or commits added after). **Keep and ask** — `-D` would destroy those commits.
 - **`mergeCommit` empty, or not an ancestor of the default** → can't prove the work is still on the default branch (unavailable merge OID, or a post-merge force-rewrite). **Keep and ask** — fail closed. This also handles feature-stack PRs correctly: a merge into a parent branch becomes eligible only once that stack reaches the default.
-- **OPEN** → leave. **CLOSED without merge** → unmerged, leave. **No PR** → possibly local-only, leave.
+- **OPEN** → leave. **CLOSED without merge** → unmerged, leave.
+- **No PR by branch name** → don't conclude "no PR" yet. Local names often don't match the PR's head branch: `git fetch origin pull/479/head:pr-479-review`, `gh pr checkout` with a custom name, a renamed branch, or a fork. Fall back to the commit search used for detached HEADs below, and also try a PR number embedded in the name (`pr-479-…` → `gh -R "$owner_repo" pr view 479`). Report what you find, e.g. "open PR #479, local copy behind its head", which tells the user far more than "no PR". Only call a branch local-only when both searches come back empty, and leave it either way unless it passes the same squash-merge proof.
 
 **Detached-HEAD worktrees** have no branch to look up, but PR-review checkouts are usually the exact head commit of a PR, so they're worth resolving. Search by SHA and hold the result to the **same proof as a squash-merge**:
 
@@ -118,6 +119,8 @@ git -C "$wt" status -z --porcelain=v1 --untracked-files=all --ignored=matching
 
 `--ignored=matching` lists ignored *roots and patterns* (so a huge `node_modules` doesn't flood or truncate the output the way full `--ignored` would), while `--untracked-files=all` expands untracked directories so a real file can't hide inside one. `-z` keeps odd paths parseable.
 
+**An ignored root is one line, but it can hide anything.** `!! bin/` says nothing about what's inside `bin/`. So never filter the inventory by directory *name* to keep output short. A name filter broad enough to be convenient (`bin`, `tmp`, `out`, `local`, `vendor`, `.cache`, `.vercel`) is broad enough to hide `bin/creds.json` or a `vercel env pull` result. Only a short allowlist of roots whose contents are regenerable by definition may go unopened: `node_modules/`, `.next/`, `.turbo/`, `dist/`, `.swc/`, `.DS_Store`, `*.tsbuildinfo`, `next-env.d.ts`. Every other ignored root gets opened (`find "$wt/<root>" -maxdepth 2 -type f | head`) before it's called disposable. Compare it against the same path in the main checkout when there is one.
+
 Status alone won't reveal a **clean** initialized submodule, so check explicitly — any initialized entry (or a failure of this command) means keep-and-ask:
 
 ```bash
@@ -137,7 +140,8 @@ git -C "$wt" submodule status    # any populated entry → keep and ask
 | Untracked **symlink** (usually → another clone in the same parent folder) | disposable — zero real data; removal deletes only the link, never the target |
 | Untracked/ignored `.claude/*` local config (`settings.local.json`, `launch.json`) | disposable — the user commits these if they want them |
 | Untracked agent-process artifacts (`docs/superpowers/*`, stray specs / plans / notes) | disposable — not committed by rule; confirm the *pattern*, don't assume |
-| Ignored build output (`node_modules`, `.next`, `.turbo`, `dist/`, `build/`, `.DS_Store`) | disposable |
+| Ignored build output on the allowlist above (`node_modules`, `.next`, `.turbo`, `dist/`, `.DS_Store`) | disposable |
+| Any other ignored directory (`build/`, `bin/`, `target/`, `tmp/`, `.vercel/`, …) | disposable only after opening it and finding regenerable output, such as compiled binaries or a `.vercel/project.json` link. Env or credential files inside → the secrets rows below |
 | Ignored `.env*` that is **byte-identical** (`cmp -s`) to the same file in the repo's main checkout | disposable — a copy survives in the main checkout, so nothing is lost |
 | Ignored **data/secrets** (`.env*` that differs or has no main-checkout copy, credentials, local databases, dumps) | **KEEP and ask** — ignored ≠ worthless; these never come back. When asking, show only the *key names* that differ (`cut -d= -f1`), never values |
 | Untracked **real** files/dirs — actual docs, code, data reports, or results | **KEEP** — a deliverable, not an artifact |
@@ -148,9 +152,20 @@ git -C "$wt" submodule status    # any populated entry → keep and ask
 
 **The disposable rows are examples, not a closed list.** The principle: things that are *throwaway by convention* look like data to a filesystem scan but carry no value. New tools invent new throwaway patterns; judge by "would the user ever commit or miss this?" and generalize.
 
+**Check for agent sessions attached to each candidate.** A worktree can be merged and clean but still be some session's working directory. Removing it doesn't lose committed work, but the session gets moved to a fresh worktree on its next turn and loses its ignored files: installed deps, local env, build caches. Claude Code keeps one folder per working directory under `~/.claude/projects/`, named by the absolute path with every non-alphanumeric character replaced by `-`:
+
+```bash
+proj=~/.claude/projects/$(printf '%s' "$wt" | sed 's/[^A-Za-z0-9]/-/g')
+last=$(ls -t "$proj"/*.jsonl 2>/dev/null | head -1)   # newest transcript, if any
+```
+
+Activity in the last 24 hours means a session may be live. Keep it and ask. Older activity is fine to remove, but name the session's last-active date in the plan so the user isn't surprised when a session reports that its worktree was recycled. Other tools (Superset, Conductor) track workspaces their own way; if one of them owns the worktree's container directory, ask rather than assume it's idle.
+
 ### Step 6 — Report the complete plan and confirm (the one gate)
 
-Show the user the whole plan in one place: total reclaimable disk, the biggest wins, and — grouped — every worktree that will be **pruned**, **removed** (clean, or ignored-only extras, listed with what they are), **force-removed** (untracked-but-disposable, with the reason), and every branch that will be deleted. Report the size as the Step 2 `du` upper bound. Call out anything headed to keep-and-ask. **Get one go-ahead covering all of it before deleting anything.** Use `AskUserQuestion` for scope. Nothing below this line runs until they approve.
+Show the user the whole plan in one place: total reclaimable disk, the biggest wins, and — grouped — every worktree that will be **pruned**, **removed** (clean, or ignored-only extras), **force-removed** (untracked-but-disposable, with the reason), and every branch that will be deleted. Report the size as the Step 2 `du` upper bound. Call out anything headed to keep-and-ask.
+
+**Show every ignored and untracked root that will be deleted**, aggregated across the plan with a count and what it is (`10 × .vercel/ (project.json link only)`, `3 × local/bin/ (compiled Go tools)`). Allowlisted build output can collapse to one line. The user approves what's actually on disk, not a category label. A root you didn't list is a root they didn't approve. **Get one go-ahead covering all of it before deleting anything.** Use `AskUserQuestion` for scope. Nothing below this line runs until they approve.
 
 ### Step 7 — Execute removals
 
@@ -206,7 +221,7 @@ Removed <count> worktrees + branches:
 - <count> with ignored-only extras (build output / identical .env copies)
 - <count> force-removed, untracked-but-disposable (symlinks / agent artifacts)
 
-Kept <count> (untouched): <real uncommitted work>, <open PRs>, <diverged/local-only>, <ignored data>, <unverifiable detached HEADs>.
+Kept <count> (untouched): <real uncommitted work>, <open PRs>, <diverged/local-only>, <ignored data>, <unverifiable detached HEADs>, <live agent sessions>.
 
 git gc reclaimed ~<N> MB across the <count> largest repos.
 ```
