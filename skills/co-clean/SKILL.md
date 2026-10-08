@@ -34,6 +34,7 @@ You never run a separate "is it pushed?" check — the removal gates guarantee i
   - **zsh doesn't word-split unquoted variables.** `set -- $line` or `for x in $list` gets one word, not many. Parse with `read -r a b c <<< "$line"` or `awk`.
   - **`status` is read-only in zsh.** Name loop variables something else (`st`).
   - **macOS `/bin/bash` is 3.2.** No associative arrays (`declare -A`), no `mapfile`. Track per-repo state with marker files or plain lists.
+  - **`IFS=$'\t' read` collapses empty fields.** Tab is IFS whitespace, so `a<TAB><TAB>c` reads as two fields and every later column shifts. Plan rows with empty columns (no branch, no untracked files) then misparse silently. Read through a non-whitespace delimiter: `tr '\t' '\037' < plan.tsv | while IFS=$'\037' read -r …`.
 - **Never use `cd` to enter a repo for read commands.** Use `git -C <repo> …` and `gh -R <owner/repo> …`. Entering a repo directory can trigger shell/`direnv`/`corepack` hooks that print banners into your captured output and corrupt parsing.
 
 ## Flow
@@ -44,7 +45,7 @@ Steps 1–5 are **discovery** — no deletions until the user approves in Step 6
 
 Resolve the set of repos to scan:
 
-- **Parent-folder scan:** each subdirectory whose `.git` is a *directory* is a repo. A `.git` *file* marks a linked worktree, not a top-level repo — skip it here (its worktrees are reached through its own repo).
+- **Parent-folder scan:** each subdirectory whose `.git` is a *directory* is a repo. A `.git` *file* marks a linked worktree, not a top-level repo — skip it here (its worktrees are reached through its own repo). Also descend one level into subdirectories that aren't repos themselves: grouping folders like `!personal/` or `work/` hold repos too. One run missed a 47-worktree repo this way.
 - **Invoked inside a single repo or linked worktree** (its `.git` may be a file): resolve the one shared repo and scan that:
 
   ```bash
@@ -71,7 +72,15 @@ for d in "$container"/*/ "$container"/*/*/; do
 done
 ```
 
-An orphan has no git metadata left to prove anything, so it can't be classified as MERGED. Its committed history is fine (it lives in the shared repo), but its working-tree files are unknown. Inventory it like Step 5, using the filesystem instead of `git status`: list everything outside the regenerable allowlist (`find "$d" -type f -not -path '*/node_modules/*' -not -path '*/.next/*' -newer "$d/.git"` shows files touched after checkout). Report every orphan in the plan as its own group. Remove it only with explicit approval, via `rm -rf`, never `git worktree remove` (git doesn't know it).
+An orphan has no git metadata left to prove anything, so it can't be classified as MERGED. Its committed history is fine (it lives in the shared repo), but its working-tree files are unknown. Inventory it against the shared repo instead (file mtimes don't help: checkout writes every file after the `.git` link):
+
+```bash
+git --git-dir="$repo/.git" --work-tree="$d" ls-files --others --exclude-standard |
+  while read -r p; do git -C "$repo" log --all --oneline -1 -- "$p" | grep -q . || echo "NO HISTORY: $p"; done
+git --git-dir="$repo/.git" --work-tree="$d" ls-files --others --ignored --exclude-standard --directory
+```
+
+The first lists files the main checkout's index doesn't have. Any of them with history somewhere in the repo came from a commit; one with **no history** is real uncommitted work, so keep and ask. The second lists ignored roots for the same Step 5 judgment as any worktree. Both only read; `ls-files` doesn't write the main index. Report every orphan in the plan as its own group. Remove it only with explicit approval, via `rm -rf`, never `git worktree remove` (git doesn't know it).
 
 ### Step 2 — Measure where the disk actually is
 
@@ -117,6 +126,7 @@ Eligible for removal only when **all** hold: `mergedAt` is set, `pr_oid` == the 
 - **`mergeCommit` empty, or not an ancestor of the default** → can't prove the work is still on the default branch (unavailable merge OID, or a post-merge force-rewrite). **Keep and ask** — fail closed. This also handles feature-stack PRs correctly: a merge into a parent branch becomes eligible only once that stack reaches the default.
 - **Stacked PR** (`baseRefName` isn't the default) → follow the chain: look up the PR whose head is that base (`gh -R "$owner_repo" pr list --head "$base" --state all`) and repeat until you reach the default or an unmerged link. If the parent was squash-merged, the child's merge commit never becomes an ancestor of the default, so it stays keep-and-ask. Show the chain when you ask (`#3161 → typedoc-ddf9afc → #3356 merged to main`, or `#3117 → #3111 still open`), which lets the user decide in one glance.
 - **OPEN** → leave. **CLOSED without merge** → unmerged, leave.
+- **PR number from the name isn't in this repo** → `gh pr view` fails or returns another repo's PR (a `pr-3365-review` worktree in a repo that has no #3365). Report it as "no matching PR in this repo", not as diverged.
 - **No PR by branch name** → don't conclude "no PR" yet. Local names often don't match the PR's head branch: `git fetch origin pull/479/head:pr-479-review`, `gh pr checkout` with a custom name, a renamed branch, or a fork. Fall back to the commit search used for detached HEADs below, and also try a PR number embedded in the name (`pr-479-…` → `gh -R "$owner_repo" pr view 479`). Report what you find, e.g. "open PR #479, local copy behind its head", which tells the user far more than "no PR". Only call a branch local-only when both searches come back empty, and leave it either way unless it passes the same squash-merge proof.
 
 **Detached-HEAD worktrees** have no branch to look up, but PR-review checkouts are usually the exact head commit of a PR, so they're worth resolving. Search by SHA and hold the result to the **same proof as a squash-merge**:
@@ -149,6 +159,8 @@ git -C "$wt" status -z --porcelain=v1 --untracked-files=all --ignored=matching
 ```
 
 `--ignored=matching` lists ignored *roots and patterns* (so a huge `node_modules` doesn't flood or truncate the output the way full `--ignored` would), while `--untracked-files=all` expands untracked directories so a real file can't hide inside one. `-z` keeps odd paths parseable.
+
+**A file-pattern ignore rule lists every match.** `--ignored=matching` collapses ignored *directories* to one line, but a rule like `apps/*/icons/**/*.tsx` matches files, so each one prints (one dashboard checkout printed hundreds of generated icons). Group these by the rule that ignores them, `git -C "$wt" check-ignore -v <path>`, and judge the rule once.
 
 **An ignored root is one line, but it can hide anything.** `!! bin/` says nothing about what's inside `bin/`. So never filter the inventory by directory *name* to keep output short. A name filter broad enough to be convenient (`bin`, `tmp`, `out`, `local`, `vendor`, `.cache`, `.vercel`) is broad enough to hide `bin/creds.json` or a `vercel env pull` result. Only a short allowlist of roots whose contents are regenerable by definition may go unopened: `node_modules/`, `.next/`, `.turbo/`, `dist/`, `.swc/`, `.DS_Store`, `*.tsbuildinfo`, `next-env.d.ts`. Every other ignored root gets opened (`find "$wt/<root>" -maxdepth 2 -type f | head`) before it's called disposable. Compare it against the same path in the main checkout when there is one.
 
@@ -191,6 +203,8 @@ last=$(ls -t "$proj"/*.jsonl 2>/dev/null | head -1)   # newest transcript, if an
 ```
 
 **Group leftover agent worktrees.** Claude Code creates worktrees for subagents run with worktree isolation (directories `agent-<hex>`, branches `worktree-agent-<hex>`) and for `claude --worktree` sessions (branches `worktree-<name>`). When the agent ends with uncommitted edits, the worktree stays. Its result was usually applied elsewhere, but not always. They still fail the tracked-edits rule, so they stay keep-and-ask. List them as their own group with `git -C "$wt" diff --stat` and the creation date, rather than mixing them in with the user's real work, so the user can clear them in one decision.
+
+No transcript doesn't mean idle: worktrees made by hand or by other tools never get one. Fall back to the worktree's reflog, `$(git -C "$wt" rev-parse --git-dir)/logs/HEAD`, which moves on every commit and checkout. **Never use the index mtime**: `git status` refreshes it, so your own Step 5 inventory makes every worktree look active.
 
 Activity in the last 24 hours means a session may be live. Keep it and ask. Older activity is fine to remove, but name the session's last-active date in the plan so the user isn't surprised when a session reports that its worktree was recycled. Other tools (Superset, Conductor) track workspaces their own way; if one of them owns the worktree's container directory, ask rather than assume it's idle.
 
@@ -250,7 +264,13 @@ Run gc on the repos you removed branches from; if that's many, prioritize the **
 
 Worktree-heavy workflows pile up caches outside any repo. These are regenerable, but clearing them costs download/rebuild time, so they get their own line in the plan and their own yes. Run this **after** Step 7, so stores no longer have checkouts linking into them.
 
-- **pnpm.** `pnpm store path` names the current store (e.g. `~/Library/pnpm/store/v11`). Sibling version folders (`v3`, `v10`) belong to pnpm versions no longer in use; deleting one doesn't break existing `node_modules` (hard-linked files survive while any link remains), it only means an older pnpm would re-download. List them with sizes, delete approved ones with `rm -rf`, then run `pnpm store prune` on the current store. Don't delete a version folder if a project still pins that pnpm major (check `packageManager` in the repos you scanned).
+- **pnpm.** Each store folder belongs to a range of pnpm majors: `v3` is pnpm 7–9, `v10` is pnpm 10, `v11` is pnpm 11. `pnpm store path` shows only the global pnpm's store, but corepack runs whatever major each repo pins, so a folder that looks stale may still be in daily use. Collect the pins first, across every repo under the scan root (not just the ones with worktrees):
+
+  ```bash
+  grep -ho '"packageManager": *"pnpm@[0-9]*' */package.json */*/package.json 2>/dev/null | sort | uniq -c
+  ```
+
+  A store folder with no pinning repo is safe to delete: existing `node_modules` keep working (hard-linked files survive while any link remains), and only a future install with that major would re-download. For each store still in use, run `pnpm store prune` with that store's major (`npx pnpm@10 store prune`) rather than deleting it. In one run, 35 repos pinned pnpm 10, so its 18 GB store only looked stale.
 - **Go.** `go clean -cache` clears `go env GOCACHE` (often 20 GB+). It refills on the next build.
 - **Playwright.** `~/Library/Caches/ms-playwright` keeps every browser revision ever installed. Report old revisions; leave the newest of each browser.
 - **Others found in Step 2** (Yarn, CocoaPods, Cypress, Homebrew): report sizes and the tool's own clean command (`yarn cache clean`, `brew cleanup`). Use the tool's command over `rm` wherever one exists.
