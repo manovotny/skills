@@ -17,6 +17,11 @@ matching `skills/...` path in this working copy before editing.
 A `PreToolUse` hook in `.claude/settings.json` blocks edits to `~/.claude/skills/` as a
 backstop, but the rule applies regardless of the hook.
 
+`.claude/skills/<name>` in this repo holds committed symlinks to `../../skills/<name>`, so
+cloud sessions that clone the repo load every skill straight from `skills/`. Edit through
+`skills/`, never the links. `setup.sh` keeps the links in sync, so run it and commit the
+result whenever you add or remove a skill.
+
 ## The audit and review prompts share dimensions — update both
 
 Two prompts cover overlapping ground:
@@ -44,7 +49,8 @@ health, platform features, SEO, CLI/library API design) stay in `audit-prompt.md
 ## co-write's voice guide is shared data — mind the path
 
 `skills/co-write/voice.md` is the user's voice guide. It's data, not documentation:
-co-pr, co-review, and co-fix read it (via `~/.claude/skills/co-write/voice.md`) when
+co-pr, co-review, and co-fix read it (via `~/.claude/skills/co-write/voice.md`, falling back
+to `../co-write/voice.md` from their own skill directory in cloud sessions) when
 writing outward-facing prose — PR bodies, review and announce comments, and the
 prose-as-code that co-fix's fix loop and co-review's direct fixes rewrite (docs, blogs,
 changelogs, and the like). Renaming or

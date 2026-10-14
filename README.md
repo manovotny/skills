@@ -77,6 +77,8 @@ cd skills
 
 Re-run `./setup.sh` any time you add or remove a skill. It's idempotent — safe to run repeatedly. It only manages symlinks for skills in this repo and won't touch other skills you have installed.
 
+It also syncs the committed `.claude/skills/` symlinks, which let Claude Code cloud sessions load every skill from a fresh clone of this repo. Commit any changes it makes there.
+
 ## Skill design principles
 
 - **Claude is the author and decision-maker.** Codex provides feedback, Claude filters it. Overkill, premature abstraction, and pedantry get rejected into a Dismissed list.

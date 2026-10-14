@@ -18,7 +18,7 @@ Create or update a GitHub pull request from the current branch. Handles staging,
 
 Covers every piece of prose this skill writes: the PR title, the PR body, and commit message bodies.
 
-1. **Read the guide.** `~/.claude/skills/co-write/voice.md`, resolved from that path — this skill runs from any repo. Medium is **PR & review comments**: apply Core voice, then that overlay. Re-read the overlay's canonical excerpts before writing; they set rhythm in ways the rules can't.
+1. **Read the guide.** `~/.claude/skills/co-write/voice.md` (or `../co-write/voice.md` from this skill's directory when that path doesn't exist, as in cloud sessions), resolved from that path — this skill runs from any repo. Medium is **PR & review comments**: apply Core voice, then that overlay. Re-read the overlay's canonical excerpts before writing; they set rhythm in ways the rules can't.
 2. **Write.**
 3. **Self-check before publishing.** Re-read the draft against the guide and fix what fails. Never push prose that would flunk `/co-write check`. The misses that keep recurring in PR bodies:
    - Restating what the link already shows — CI status, file counts, "lint and typecheck pass". The reader clicks through for that, and it reads as answering your own worry instead of theirs.

@@ -103,7 +103,7 @@ Record each candidate as **stream plus id**, because the two streams are separat
 
 **Don't dismiss diagnostics as "pre-existing."** If diagnostics, LSP output, or linter warnings surface in changed files or their direct ripple — unused code, type errors, deprecated APIs, etc. — treat them as actionable alongside the accepted findings. Either fix them in the same pass or surface them for the user's call. Pre-existence alone is not grounds for dismissal.
 
-**Prose fixes carry the voice.** When an accepted finding lands in prose that lives in the repo — docs, READMEs, blog posts, articles, changelogs, release notes — write that prose per `~/.claude/skills/co-write/voice.md` if it exists, using the medium overlay that matches the content (Docs, Blog & long-form, Release notes & changelogs, ...; core alone when none fits). Apply the guide directly; don't invoke `/co-write`. Format still wins: a local styleguide or repo convention outranks the voice, per the guide itself. And voice never widens the fix — revoice only the prose the fix already touches; rewriting the surrounding document is the same smuggled refactor as above.
+**Prose fixes carry the voice.** When an accepted finding lands in prose that lives in the repo — docs, READMEs, blog posts, articles, changelogs, release notes — write that prose per `~/.claude/skills/co-write/voice.md` (or `../co-write/voice.md` from this skill's directory when that path doesn't exist, as in cloud sessions) if it exists, using the medium overlay that matches the content (Docs, Blog & long-form, Release notes & changelogs, ...; core alone when none fits). Apply the guide directly; don't invoke `/co-write`. Format still wins: a local styleguide or repo convention outranks the voice, per the guide itself. And voice never widens the fix — revoice only the prose the fix already touches; rewriting the surrounding document is the same smuggled refactor as above.
 
 **Step 8 — Pre-commit and push.** If the round produced fixes, run the shared pre-commit flow on them (lint/format always, tests/typechecks when meaningful), commit, and push. **No amending.** A round that accepted nothing has nothing to commit — skip straight to Step 8b rather than manufacturing a commit.
 
@@ -122,7 +122,7 @@ REPLY_EOF
 
 A top-level bot comment has no reply thread, and its issue comment id sent to that endpoint fails — answer those in one combined `gh pr comment` instead, naming the bot you're answering.
 
-**Re-fetch each thread immediately before posting.** Codex runs and fixes take time, so a human may have replied since Step 4 — skip any root that has since gained one. Answer each `(stream, id, updated_at)` revision at most once: an unchanged revision you already answered stays untouched, while a revised one is answered again, covering only what changed since the revision you answered before. Write replies first person as the user; if `~/.claude/skills/co-write/voice.md` exists, apply it (medium: PR & review comments).
+**Re-fetch each thread immediately before posting.** Codex runs and fixes take time, so a human may have replied since Step 4 — skip any root that has since gained one. Answer each `(stream, id, updated_at)` revision at most once: an unchanged revision you already answered stays untouched, while a revised one is answered again, covering only what changed since the revision you answered before. Write replies first person as the user; if `~/.claude/skills/co-write/voice.md` (or `../co-write/voice.md` from this skill's directory when that path doesn't exist, as in cloud sessions) exists, apply it (medium: PR & review comments).
 
 **Step 9 — Check termination.** Codex is satisfied when its response says the PR is ready or has no substantive findings left — judge the response as a whole, not by any particular phrase. If satisfied (even with trailing nits), exit the loop. Trailing nits fold into Step 10 below.
 
@@ -141,7 +141,7 @@ If updating:
 
 1. **Read the current body first** via `gh pr view --json title,body`. Do not rely on what the body looked like at the start of the loop — the user may have edited it (added Vercel previews, Linear/Slack links, screenshots, callouts) while Codex was running.
 2. **Identify preserved content** using the same heuristics as `/co-pr update` Step 3 (structural sections, callouts, images, external links to deployments/tickets/resources, code blocks).
-3. **Merge, don't replace.** Rewrite inline prose freely, applying `~/.claude/skills/co-write/voice.md` if it exists; reposition preserved elements if needed; never drop them.
+3. **Merge, don't replace.** Rewrite inline prose freely, applying `~/.claude/skills/co-write/voice.md` (or `../co-write/voice.md` from this skill's directory when that path doesn't exist, as in cloud sessions) if it exists; reposition preserved elements if needed; never drop them.
 4. Use `gh pr edit --body-file -` with heredoc, never inline `--body`.
 
 ## Output
