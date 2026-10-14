@@ -61,5 +61,18 @@ for link_path in "$TARGET_DIR"/*/; do
   fi
 done
 
+# Repo-local links: cloud sessions load skills from a clone's .claude/skills/, not ~/.claude/skills/
+REPO_LINKS_DIR="$SCRIPT_DIR/.claude/skills"
+mkdir -p "$REPO_LINKS_DIR"
+for skill_dir in "$REPO_SKILLS_DIR"/*/; do
+  [ -f "$skill_dir/SKILL.md" ] || continue
+  skill_name="$(basename "$skill_dir")"
+  ln -sfn "../../skills/$skill_name" "$REPO_LINKS_DIR/$skill_name"
+done
+for link_path in "$REPO_LINKS_DIR"/*; do
+  [ -L "$link_path" ] || continue
+  [ -f "$REPO_SKILLS_DIR/$(basename "$link_path")/SKILL.md" ] || rm "$link_path"
+done
+
 echo ""
 echo "Done: $created created, $skipped skipped, $removed removed"
