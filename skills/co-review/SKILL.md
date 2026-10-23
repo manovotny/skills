@@ -67,7 +67,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 **Step 3 — Synthesize.** Once Codex finishes, merge both reviews:
 
 - Deduplicate overlapping findings
-- Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry
+- Apply Claude's judgment — reject overkill, out-of-scope, and low-value pedantry. Voice violations in changed prose aren't pedantry; see the voice gate below.
 - **Do not dismiss touched-file diagnostics as "pre-existing."** Diagnostics, LSP output, or linter warnings in changed files or their direct ripple are actionable regardless of whether they predate the diff. Pre-existence alone is not grounds for rejection. If a diagnostic is kept (e.g., framework-required signature, false positive), either surface it to the user with the rationale or apply an intentional suppression/rename — do not silently drop it into `Dismissed`.
 - **Fold in CI failures and staleness as repo-level findings.** Treat failing/errored CI checks as findings at the severity the failure warrants (flag obvious infra/flake as such, not as a code bug). If Claude and Codex report the same CI failure, list it once. A `BEHIND`/stale base is its own finding; recommend `/co-merge`. These have no file anchor — mark them repo-level so posting routes them correctly (see Option 1). They come from reading check status, not from running builds locally.
 - **Fold in bot reviewer comments.** A bot-raised finding that survives judgment joins the issue list carrying its `Bot thread` or `Bot top-level` reference — posting routes on that field instead of stacking a duplicate comment on the same anchor. If Claude or Codex independently found the same issue, merge them; the bot comment wins the anchor. Skipped ones go to **Dismissed** with rationale — every triaged bot comment gets an answer once the user picks a posting option (see "Bot reviewer thread replies").
@@ -80,6 +80,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
   - `[Needs author input]`: intent- or scope-dependent.
   - `[Unverifiable — needs access to <source>]`: an objective claim blocked on a missing authoritative source.
 - **Synthesis gate — verify or request, don't punt.** No finding may be marked `[Needs author input]` or left as flagged uncertainty on an objectively-checkable fact when an authoritative source is reachable or could be requested. If the source is reachable, verify against it. If it's missing, request it and mark the item `[Unverifiable — needs access to <source>]` so it stays visible instead of silently becoming an author question. Only genuinely intent- or scope-dependent items belong in `[Needs author input]`.
+- **Voice gate — the user never has to run `/co-write check` after a co-review.** When the diff touches repo prose, the issue list carries the voice sweep from review-prompt.md's Content item, as findings or as its explicit "passes" line. If neither review shows the sweep ran, run it yourself before presenting. Every violation stays in the list; don't demote small ones to Dismissed or to a "smaller misses I'd leave alone" aside.
 
 **Who wrote the PR.** Before presenting, place the author. It decides how far the direct fix flow can go:
 
@@ -243,7 +244,7 @@ Both check:
 - **New** — new concerns found
 - **Dismissed** — carried forward, updated only if needed
 
-**Proactively flag** each unresolved and new issue, same as initial review: `[Quick fix]`, `[Comment — learning]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]`. The synthesis gate still applies: verify objective claims against a reachable source, or request a missing one — don't punt them to the author.
+**Proactively flag** each unresolved and new issue, same as initial review: `[Quick fix]`, `[Comment — learning]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]`. The synthesis gate still applies: verify objective claims against a reachable source, or request a missing one — don't punt them to the author. So does the voice gate: changed prose in the new commits gets the full sweep.
 
 **Step 4 — Present and prompt.**
 
@@ -317,7 +318,7 @@ Every comment this skill posts speaks as the user — review comments, thread re
 Then, writing as if the user is speaking — first person, not Claude:
 
 - **Lead with the observation.** No scene-setting ("On a reference page that's literally defining `someFunction`…"), no softening openers ("Small thing —", "Nit -", "Separately —", "Let's match:"), no restating the PR's goal back to the author. If the suggestion block already shows the fix, the body is the reason + the question — nothing else.
-- **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?".
+- **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?". The voice guide's ban on "maybe" doesn't apply here; its PR & review comments overlay carves this out.
 - **Straightforward but not cold.** Assume the reviewer doesn't have the same context as the author.
 - **Inquisitive, not demanding.** Raise the concern, offer the alternative, let the author decide.
 - When a fix is straightforward, use a GitHub suggestion block (see above) so the author can apply it directly.
