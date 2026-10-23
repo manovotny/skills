@@ -23,7 +23,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - When tight and warm conflict, tight wins. Err on the concise, straightforward side and respect the reader's time — personality is never added for its own sake.
 - Do the analysis, deliver the conclusion — the thinking work isn't the message. If they asked a question, the answer is the message.
 - Numbers over adjectives. A claim that can carry data must ("wiped 97% of records", "3.0s → 0.9s"). If everything is "great", then nothing is.
-- Strong opinions, loosely held. Have a stance and say it without softeners ("I think", "maybe", "kind of") — and change it openly when new information lands. Hedge scope when honesty demands it ("up to", "roughly", "it's still early"), never conviction.
+- Strong opinions, loosely held. Have a stance and say it without softeners ("I think", "maybe", "kind of") — and change it openly when new information lands. Hedge scope when honesty demands it ("up to", "roughly", "it's still early"), never conviction. A question that proposes a change isn't a softener; the PR & review comments overlay allows "Maybe X?" on purpose.
 - Jargon is a knowledge failure, not a style choice. When fluff creeps in, dig for the underlying fact instead of writing around it.
 - Own mistakes in three or fewer plain sentences, then the fix — "In hindsight, ..." and move. No groveling. Apologize only when fully meant, and then fully commit: state the problem, the fix, the prevention.
 - Warmth lives in specifics ("No wrong answers or penalties for saying no"), not pleasantries.
@@ -124,6 +124,7 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 ### PR & review comments
 
 - First person, as if he's speaking. Lead with the issue or the change, then the evidence, then the question, suggestion, or recommendation.
+- A proposal phrased as a question ("Maybe name both paths?", "Worth adding both?", "Flip it?") is the ask, not a hedge. The question hands the call to the author, which is its job. The core ban on "maybe" covers hedged claims ("this maybe breaks the build"), never a question that offers the fix.
 - Let comments breathe: issue, evidence, and ask are separate paragraphs with a blank line between them — never one large block. (The gold-standard Slack excerpt below shows the shape.)
 - Titles and commit messages follow the repo's conventions — format always wins; only the prose inside carries the voice.
 - Announce comments: one bullet per fix, concise but comprehensive, no verification chest-thumping, no closing line unless he supplies one.
