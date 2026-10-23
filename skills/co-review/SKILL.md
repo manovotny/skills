@@ -74,8 +74,20 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
 - **Reviewer proposals are not requirements.** A broader guarantee or adjacent hardening that Claude or Codex proposes is not an acceptance criterion unless the user or an existing repo contract requires it — raise it as a `suggestion` and let the author decide. In re-reviews, judge findings against the PR's original scope, not against proposals from earlier rounds; an unadopted proposal doesn't become "unresolved" by being repeated.
 - Add rejected items to a **Dismissed** section with brief rationale for each
 - Produce a single numbered issue list in the format from review-prompt.md
-- **Proactively flag confidence for each issue.** For every issue, decide whether Claude has a clear fix or whether it's better raised as a comment/question for the author. Mark each issue visibly (e.g., `[Direct fix ready]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]` for an objective claim blocked on a missing authoritative source). The user shouldn't have to ask.
+- **Proactively flag each issue by who should make the change, not just whether Claude knows the fix.** Mark each issue visibly so the user doesn't have to ask:
+  - `[Quick fix]`: mechanical and unambiguous, roughly 20 changed lines or fewer. Typos, lint, broken links, formatting, a missed rename.
+  - `[Comment — learning]`: structure, approach, wording judgment, or anything else the author would learn from making. Use this **even when Claude knows the exact fix**. Knowing the fix doesn't make it ours to push.
+  - `[Needs author input]`: intent- or scope-dependent.
+  - `[Unverifiable — needs access to <source>]`: an objective claim blocked on a missing authoritative source.
 - **Synthesis gate — verify or request, don't punt.** No finding may be marked `[Needs author input]` or left as flagged uncertainty on an objectively-checkable fact when an authoritative source is reachable or could be requested. If the source is reachable, verify against it. If it's missing, request it and mark the item `[Unverifiable — needs access to <source>]` so it stays visible instead of silently becoming an author question. Only genuinely intent- or scope-dependent items belong in `[Needs author input]`.
+
+**Who wrote the PR.** Before presenting, place the author. It decides how far the direct fix flow can go:
+
+- **Teammate:** the author shares a small GitHub team with the user. List the user's teams with `gh api user/teams`, keeping the PR's org and teams of about 10 members or fewer, since a 40-person umbrella team isn't a team in this sense. If the repo has a CODEOWNERS file, prefer the team it assigns to the changed files. Confirm the author with `gh api orgs/{org}/teams/{team}/memberships/{author}` (200 means member). This stays current as people join and leave, with no list to maintain. Fallbacks, in order: the user says so, or a team named in the user-level `~/.claude/CLAUDE.md` or the repo's context files (CLAUDE.md, AGENTS.md, CONTRIBUTING). On a teammate's PR, a review is also how they learn, so comments are the default and only `[Quick fix]` items get pushed (see the direct fix flow). If the author has stated a preference for fixes versus comments, in the PR or relayed by the user, follow it.
+- **Outside contributor:** anyone else. The default flow applies.
+- **The user:** use `co-fix` for your own PRs, not this skill.
+
+When you present the issue list, say which one applies, e.g. "The author is a teammate, so only the 3 quick fixes are eligible for a direct push."
 
 **Step 4 — Present and prompt.**
 
@@ -121,7 +133,9 @@ Handles both "fix everything directly" and mixed "some fixes, some comments" cas
 
 **Don't dismiss diagnostics as "pre-existing."** If diagnostics, LSP output, or linter warnings surface in changed files or their direct ripple — unused code, type errors, deprecated APIs, etc. — treat them as actionable alongside the accepted findings. Either fix them in the same pass or surface them for the user's call. Pre-existence alone is not grounds for dismissal.
 
-1. **Ask which issues to fix directly.** Example: "Which issues should I fix directly? You can also pull items from the Dismissed list if you want them included."
+**Teammate PRs: quick fixes only by default.** When the author is a teammate (see "Who wrote the PR"), only `[Quick fix]` items are eligible, and a GitHub suggestion block beats a push when one fits, so the author stays in control. Everything else posts as a comment. Pushing a `[Comment — learning]` or `[Needs author input]` item needs a reason from the user: the author asked for direct fixes, or it's time-critical. That reason goes in the announce comment's opening line. Before pushing to a teammate's PR, count the changed lines, excluding lockfiles. Over ~20, stop and confirm with the user, even when every item is a quick fix. Outside contributors keep the default below.
+
+1. **Ask which issues to fix directly.** Example: "Which issues should I fix directly? You can also pull items from the Dismissed list if you want them included." On a teammate PR, offer only the `[Quick fix]` items and say the rest will post as comments.
 2. **Make the fixes locally.** Do NOT commit or push yet. Let the user review the changes first.
    - **Prose fixes carry the voice.** When a fix lands in prose that lives in the repo — docs, READMEs, blog posts, changelogs, release notes — write it per `~/.claude/skills/co-write/voice.md` (or `../co-write/voice.md` from this skill's directory when that path doesn't exist, as in cloud sessions) if it exists, using the medium overlay that matches the content (Docs, Blog & long-form, Release notes & changelogs, ...; core alone when none fits). Apply the guide directly; don't invoke `/co-write`. A local styleguide or repo convention outranks the voice, and voice never widens the fix: revoice only the prose the fix already touches.
 3. **Verify the fixes before showing them.** These are changes you authored and will push, so confirm they hold up — don't claim merge-ready on faith. Run the repo's fast checks on the change — **formatter, linter, type check, and tests** — when they're detectable and runnable. Detect the commands; never hardcode them. Prefer what CI runs (read CI config), then `package.json` scripts, `Makefile`/`justfile`, then the ecosystem's standard (`pyproject.toml`/`tox`/`ruff`, `cargo`, `go`, etc.).
@@ -156,7 +170,7 @@ ANNOUNCE_EOF
 
 **Structure:**
 
-1. **Opening line** — announces direct push with the short commit SHA (`git rev-parse --short HEAD`). Use plain text for the hash — not code backticks — so GitHub renders it as a clickable link to the commit. Example: "Pushed some changes directly in abc1234."
+1. **Opening line** — announces direct push with the short commit SHA (`git rev-parse --short HEAD`). Use plain text for the hash — not code backticks — so GitHub renders it as a clickable link to the commit. Example: "Pushed some changes directly in abc1234." On a teammate PR where the user overrode the quick-fixes-only default, add the reason in the same line: "Pushed some changes directly in abc1234, since you asked for direct fixes."
 2. **Bulleted summary** — concise but comprehensive. One bullet per fix. Match the tone of the summary Claude showed the user for approval, except verification status: typecheck/lint/format/test results never appear in the comment — not as a bullet, not as a trailing sentence. That recap belongs in the chat summary to the user; CI reports status on the PR.
 3. **End of comment** — the comment ends after the last bullet. Include a closing line only when the user explicitly supplies or requests one; use their words.
 
@@ -229,7 +243,7 @@ Both check:
 - **New** — new concerns found
 - **Dismissed** — carried forward, updated only if needed
 
-**Proactively flag confidence** on each unresolved and new issue, same as initial review — `[Direct fix ready]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]`. The synthesis gate still applies: verify objective claims against a reachable source, or request a missing one — don't punt them to the author.
+**Proactively flag** each unresolved and new issue, same as initial review: `[Quick fix]`, `[Comment — learning]`, `[Needs author input]`, or `[Unverifiable — needs access to <source>]`. The synthesis gate still applies: verify objective claims against a reachable source, or request a missing one — don't punt them to the author.
 
 **Step 4 — Present and prompt.**
 
@@ -270,7 +284,7 @@ This loop repeats until the PR is clean or the user approves it.
 
 ## GitHub suggested changes
 
-When a comment is marked `[Direct fix ready]` and the fix is a small, self-contained code change, use GitHub's suggestion syntax so the author can apply it with one click. Wrap the replacement code in a suggestion block inside the comment body:
+When a comment is marked `[Quick fix]` and the fix is a small, self-contained code change, use GitHub's suggestion syntax so the author can apply it with one click. Wrap the replacement code in a suggestion block inside the comment body:
 
 ````
 ```suggestion
