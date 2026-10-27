@@ -60,6 +60,8 @@ The bypass flag is deliberate: the review needs network (`gh`, `git fetch`) and 
 
 While Codex runs, Claude reviews the diff simultaneously using the same prompt and `gh pr diff {number}`. True parallel — do not wait for Codex before starting Claude's review.
 
+**Give long prose its own voice pass.** When the diff changes more than about 100 lines of repo prose, start a subagent alongside Codex whose only job is review-prompt.md's voice sweep. Give it `voice.md`, the governing rulebook, and the changed prose files to read whole. Ask for findings in the Content item's format, plus its coverage list. Claude's own review also weighs claims, CI, and bot threads, so the prose gets what attention is left, and the misses that need a full read (restatements, sentences that carry nothing) are the ones it skips.
+
 The background task notifies you when Codex finishes; do Claude's review in the meantime and read Codex's output after that notification. If you need to watch a condition before then, use the `Monitor` tool with an `until` loop.
 
 If Codex fails (non-zero exit, empty response, timeout), continue with Claude's review alone and tell the user Codex errored. Codex is additive — Claude's review stands on its own.
@@ -80,7 +82,7 @@ If Codex fails (non-zero exit, empty response, timeout), continue with Claude's 
   - `[Needs author input]`: intent- or scope-dependent.
   - `[Unverifiable — needs access to <source>]`: an objective claim blocked on a missing authoritative source.
 - **Synthesis gate — verify or request, don't punt.** No finding may be marked `[Needs author input]` or left as flagged uncertainty on an objectively-checkable fact when an authoritative source is reachable or could be requested. If the source is reachable, verify against it. If it's missing, request it and mark the item `[Unverifiable — needs access to <source>]` so it stays visible instead of silently becoming an author question. Only genuinely intent- or scope-dependent items belong in `[Needs author input]`.
-- **Voice gate — the user never has to run `/co-write check` after a co-review.** When the diff touches repo prose, the issue list carries the voice sweep from review-prompt.md's Content item, as findings or as its explicit "passes" line. If neither review shows the sweep ran, run it yourself before presenting. Every violation stays in the list; don't demote small ones to Dismissed or to a "smaller misses I'd leave alone" aside.
+- **Voice gate — the user never has to run `/co-write check` after a co-review.** When the diff touches repo prose, the issue list carries the voice sweep from review-prompt.md's Content item, as findings or as its explicit "passes" line. A sweep counts only when it lists the changed prose files it read in full, with a result for each. A few voice nits from Codex, or a keyword grep, don't count. Run the sweep yourself on any changed prose file no pass covered before presenting. Every violation stays in the list; don't demote small ones to Dismissed or to a "smaller misses I'd leave alone" aside.
 
 **Who wrote the PR.** Before presenting, place the author. It decides how far the direct fix flow can go:
 
@@ -318,6 +320,7 @@ Every comment this skill posts speaks as the user — review comments, thread re
 Then, writing as if the user is speaking — first person, not Claude:
 
 - **Lead with the observation.** No scene-setting ("On a reference page that's literally defining `someFunction`…"), no softening openers ("Small thing —", "Nit -", "Separately —", "Let's match:"), no restating the PR's goal back to the author. If the suggestion block already shows the fix, the body is the reason + the question — nothing else.
+- **Cite the rule behind a style finding.** A voice or styleguide finding keeps the rule's name from the issue list in the posted comment, linked when the rulebook lives at a URL, so the fix doesn't read as the user's taste. When the rule prescribes a replacement ("ensure", not "make sure"), suggest that word, not a different rewrite. The local rulebook outranks `voice.md`, so its word wins.
 - **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?". The voice guide's ban on "maybe" doesn't apply here; its PR & review comments overlay carves this out.
 - **Straightforward but not cold.** Assume the reviewer doesn't have the same context as the author.
 - **Inquisitive, not demanding.** Raise the concern, offer the alternative, let the author decide.
