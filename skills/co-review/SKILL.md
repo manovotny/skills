@@ -320,6 +320,7 @@ Every comment this skill posts speaks as the user — review comments, thread re
 Then, writing as if the user is speaking — first person, not Claude:
 
 - **Lead with the observation.** No scene-setting ("On a reference page that's literally defining `someFunction`…"), no softening openers ("Small thing —", "Nit -", "Separately —", "Let's match:"), no restating the PR's goal back to the author. If the suggestion block already shows the fix, the body is the reason + the question — nothing else.
+- **Cite the rule behind a style finding.** A voice or styleguide finding keeps the rule's name from the issue list in the posted comment, linked when the rulebook lives at a URL, so the fix doesn't read as the user's taste. When the rule prescribes a replacement ("ensure", not "make sure"), suggest that word, not a different rewrite. The local rulebook outranks `voice.md`, so its word wins.
 - **Ask one direct question.** The question itself is the softener — don't stack another on top. A grounded "Maybe X?" or "Would Y work better?" beats a statement with a trailing "— wdyt?". The voice guide's ban on "maybe" doesn't apply here; its PR & review comments overlay carves this out.
 - **Straightforward but not cold.** Assume the reviewer doesn't have the same context as the author.
 - **Inquisitive, not demanding.** Raise the concern, offer the alternative, let the author decide.
