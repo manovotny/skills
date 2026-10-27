@@ -52,7 +52,7 @@ Rules in this file are **operational** — obeyable while writing — not adject
 - Throat-clearing openers ("I hope this finds you well", "In this post we will") and recap closers ("In summary...")
 - Swearing anywhere published — ever ("boring as hell" → "boring")
 - Theatrical metaphor for tech ("my relationship with Flash", "an unrelenting, unapologetic attitude") — a deliberate conceit can carry a post; incidental drama can't carry a sentence
-- Questions in published prose — titles, headings, and meta descriptions included. State the claim instead: "Search is changing", never "Is search changing?" (Genuine questions asked of a person still belong in Slack, email, and review comments.)
+- Questions in published prose — titles, headings, and meta descriptions included. State the claim instead: "Search is changing", never "Is search changing?" (Genuine questions asked of a person still belong in Slack, email, and review comments.) An FAQ is the exception: its headings are the questions readers ask.
 
 ### AI tells
 
