@@ -15,6 +15,7 @@ Automate agentic peer review of a pull request. Claude and Codex review the PR d
 - Otherwise run `gh pr view --json number` to infer from the current branch.
 - If `gh pr view` fails (common for fork PRs), get the current branch name and try `gh pr list --head "owner:branch" --json number` — replace the **first** `/` in the branch name with `:` to form the fork-qualified head ref (e.g., branch `michaelsthr/fix/outdated-expo-package` → `--head "michaelsthr:fix/outdated-expo-package"`).
 - If no PR can be determined, ask the user for the number and stop.
+- Once the PR is known, assign the user with `gh pr edit {number} --add-assignee @me`. It's idempotent (already assigned is a no-op), so no prior check is needed, and it runs on re-reviews too. It needs triage or write access; if it fails (e.g., a fork or read-only repo), mention it in one line and continue — never block the review on it.
 
 ## Orient to the PR branch
 
