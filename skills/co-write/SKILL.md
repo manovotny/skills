@@ -55,11 +55,23 @@ If `voice.md` is missing, or its Core voice section has no rules yet, write as C
 
 `/co-write check` with a draft (pasted or pointed at).
 
-Report, don't rewrite. Cite the specific rule or excerpt each violation conflicts with:
+Report, don't rewrite.
+
+**Read the whole piece before any line.** Line-level rules miss the problems a reader feels first, so step back and read it start to finish as its reader would:
+
+- Does it open with context: what this is, and why the reader is here? A page that starts with a callout or a heading, or with "This page covers", has no opening.
+- Does each section lead into the next, or do they read as separate notes?
+- Does each heading earn its place? A stack of headings with two or three sentences under each reads like an outline, not prose.
+- Does the structure fit the medium? Compare a page with one or two of its siblings in the same repo, such as other overviews or guides, and flag where it breaks their pattern.
+
+Report these first, as structure findings. Then check the lines.
+
+Cite the specific rule or excerpt each violation conflicts with:
 
 - × "utilize" — Core voice: never-words
 - × closes with "Best regards" — Slack overlay: no sign-offs
 - ✓ opener matches — straight in, no greeting
+- × opens with a callout, then a heading, with no intro — Structure: no opening
 
 End with a verdict: **passes** / **passes with nits** / **doesn't sound like the user**.
 
