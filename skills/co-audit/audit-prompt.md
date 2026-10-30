@@ -25,7 +25,7 @@ Focus: {FOCUS}
 9. **Best practices & correctness** — language or framework idioms used incorrectly, footguns, deprecated APIs.
 10. **Testing & types** — critical paths without tests, weak type safety, places where stricter types or a test would prevent real bugs. Respect the repo's existing testing posture — do not demand tests where the project has none by design.
 11. **Dependencies & build** — outdated or vulnerable dependencies, unused dependencies, oversized bundles, build or config improvements. Verify version and vulnerability claims against the lockfile, `npm audit` / `npm outdated` (or the ecosystem equivalent), or official package metadata — do not assert a version or CVE from memory. If you cannot verify, mark it unverifiable rather than guessing.
-12. **Documentation & content** — user-facing content that could be clearer or more concise without losing meaning; README or inline docs that are missing, stale, or wrong.
+12. **Documentation & content** — user-facing content that could be clearer or more concise without losing meaning; pages that don't flow (no opening context, disconnected short sections, a structure unlike their sibling pages); README or inline docs that are missing, stale, or wrong.
 
 ### Adaptive (apply by detected project type)
 

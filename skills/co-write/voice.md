@@ -138,6 +138,7 @@ His words for the register: firm, concise, direct, genuine, accurate, helpful.
 - Lead with location, end with action: "In your project's root folder, open `.env`."
 - Cut "you can" before an instruction — give the action directly, in the imperative. "Get the user's OAuth access token from your backend…" not "You can get the user's OAuth access token…". (Release notes differ: "You can now X" announces a capability, it doesn't instruct.)
 - Code references exact: `<SignIn />` self-closing, backticks on files, commands, and identifiers.
+- Open every page with context: what this is and why the reader is here. Then connect the sections with prose. An overview of headings with two sentences under each reads like notes.
 
 ### Blog & long-form
 
